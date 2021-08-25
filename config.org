@@ -55,6 +55,10 @@ be real personal programming career for me at last!
       :desc "org-table"
       "t o" #'org-table-create)
 
+(map! :leader
+      :desc "org-table"
+      "e s" #'eshell)
+
 
 
 #+END_SRC

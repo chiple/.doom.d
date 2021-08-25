@@ -39,6 +39,10 @@
       :desc "org-table"
       "t o" #'org-table-create)
 
+(map! :leader
+      :desc "org-table"
+      "e s" #'eshell)
+
 (setq doom-theme 'doom-dracula)
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
