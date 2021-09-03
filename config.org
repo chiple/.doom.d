@@ -115,7 +115,14 @@ It seems that I have same problem guys on the Github talked about.
 
 ** Directory
 #+BEGIN_SRC emacs-lisp
+(when (string-equal system-type "darwin")
+
+(setq org-directory "~/MEGA/MEGAsync")
+)
+(when (string-equal system-type "gnu/linux")
 (setq org-directory "~/MEGAsync")
+)
+
 #+END_SRC
 ** Journal
 #+BEGIN_SRC emacs-lisp
@@ -148,9 +155,16 @@ It seems that I have same problem guys on the Github talked about.
 #+end_src
 ** Org-roam-server
 #+BEGIN_SRC emacs-lisp
+
+(when (string-equal system-type "darwin")
+ (setq org-roam-server-file-path "/Users/yamamotoryuuji/org-roam-server")
+)
+(when (string-equal system-type "gnu/linux")
+ (setq org-roam-server-file-path "/home/ryu/org-roam-server")
+)
 (use-package org-roam-server
   :ensure t
-  :load-path "/home/ryu/org-roam-server"
+  :load-path org-roam-server-file-path
   :config
   :init
   (setq org-roam-server-host "127.0.0.1"
@@ -235,7 +249,7 @@ It seems that I have same problem guys on the Github talked about.
 * EXWM
 
 ** TODO exit the process where the current buffer exist.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (require 'exwm)
 (require 'exwm-config)
 (exwm-config-default)

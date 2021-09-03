@@ -72,7 +72,13 @@
 
 (use-package sly)
 
+(when (string-equal system-type "darwin")
+
+(setq org-directory "~/MEGA/MEGAsync")
+)
+(when (string-equal system-type "gnu/linux")
 (setq org-directory "~/MEGAsync")
+)
 
 (setq org-journal-date-prefix "#+TITLE:"
       org-journal-time-prefix "* "
@@ -95,9 +101,15 @@
 
 
 
+(when (string-equal system-type "darwin")
+ (setq org-roam-server-file-path "/Users/yamamotoryuuji/org-roam-server")
+)
+(when (string-equal system-type "gnu/linux")
+ (setq org-roam-server-file-path "/home/ryu/org-roam-server")
+)
 (use-package org-roam-server
   :ensure t
-  :load-path "/home/ryu/org-roam-server"
+  :load-path org-roam-server-file-path
   :config
   :init
   (setq org-roam-server-host "127.0.0.1"
@@ -159,20 +171,6 @@
  '(awk . t)
  '(shell . t)
  )
-
-(require 'exwm)
-(require 'exwm-config)
-(exwm-config-default)
-(require 'exwm-randr)
-
-(setq exwm-randr-screen-change-hook
-      (lambda ()
-        (start-process-shell-command
-         "xrandr" nil "xrandr --output Virtual-1 --mode 1366x768 --pos 0x0 --rotate normal")))
-(exwm-randr-enable)
-(require 'exwm-systemtray)
-
-(exwm-systemtray-enable)
 
 (with-eval-after-load 'magit
   (require 'forge))
