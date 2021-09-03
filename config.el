@@ -80,10 +80,17 @@
 (setq org-directory "~/MEGAsync")
 )
 
-(setq org-journal-date-prefix "#+TITLE:"
-      org-journal-time-prefix "* "
-      org-journal-date-format "%a, %Y-%m-%d"
-      org-journal-file-format "%Y-%a-%d.org")
+(when (string-equal system-type "darwin")
+
+(setq org-journal-dir "~/MEGA/MEGAsync/journal" )
+)
+(when (string-equal system-type "gnu/linux")
+(setq org-journal-dir "~/MEGAsync/journal" )
+)
+
+
+(setq org-journal-date-format "%A, %d %B %Y")
+(require 'org-journal)
 
 (setq org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-if-done t
@@ -92,7 +99,19 @@
       org-agenda-compact-blocks t
       org-agenda-start-with-log-mode t)
 (with-eval-after-load 'org-journal
-  (setq org-agenda-files '("~/org" "~/org/roam/notes/")))
+(when (string-equal system-type "darwin")
+
+
+  (setq org-agenda-files '("~/MEGA/MEGAsync/org"
+                           "~/MEGA/MEGAsync/todo.org"
+                           "~/MEGA/MEGAsync/journal.org" )))
+
+)
+(when (string-equal system-type "gnu/linux")
+
+  (setq org-agenda-files '("~/MEGAsync/org")))
+
+
 (setq org-agenda-clockreport-parameter-plist
       (quote (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
 (setq org-agenda-deadline-faces
@@ -174,3 +193,5 @@
 
 (with-eval-after-load 'magit
   (require 'forge))
+
+

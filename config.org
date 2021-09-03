@@ -126,10 +126,18 @@ It seems that I have same problem guys on the Github talked about.
 #+END_SRC
 ** Journal
 #+BEGIN_SRC emacs-lisp
-(setq org-journal-date-prefix "#+TITLE:"
-      org-journal-time-prefix "* "
-      org-journal-date-format "%a, %Y-%m-%d"
-      org-journal-file-format "%Y-%a-%d.org")
+(when (string-equal system-type "darwin")
+
+(setq org-journal-dir "~/MEGA/MEGAsync/journal" )
+)
+(when (string-equal system-type "gnu/linux")
+(setq org-journal-dir "~/MEGAsync/journal" )
+)
+
+
+(setq org-journal-date-format "%A, %d %B %Y")
+(require 'org-journal)
+
 #+end_src
 ** Agenda
 #+begin_src emacs-lisp
@@ -140,7 +148,19 @@ It seems that I have same problem guys on the Github talked about.
       org-agenda-compact-blocks t
       org-agenda-start-with-log-mode t)
 (with-eval-after-load 'org-journal
-  (setq org-agenda-files '("~/org" "~/org/roam/notes/")))
+(when (string-equal system-type "darwin")
+
+
+  (setq org-agenda-files '("~/MEGA/MEGAsync/org"
+                           "~/MEGA/MEGAsync/todo.org"
+                           "~/MEGA/MEGAsync/journal.org" )))
+
+)
+(when (string-equal system-type "gnu/linux")
+
+  (setq org-agenda-files '("~/MEGAsync/org")))
+
+
 (setq org-agenda-clockreport-parameter-plist
       (quote (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
 (setq org-agenda-deadline-faces
@@ -148,6 +168,9 @@ It seems that I have same problem guys on the Github talked about.
         (0.0    . org-upcoming-deadline)))  ; due today or later
 
 #+end_src
+
+#+RESULTS:
+: ((1.0001 . org-warning) (0.0 . org-upcoming-deadline))
 
 **** agenda styles
 #+begin_src emacs-lisp
@@ -271,4 +294,8 @@ It seems that I have same problem guys on the Github talked about.
 #+end_src
 *
 
-* NO
+* TRANSPARE
+#+begin_src emacs-lisp
+
+
+#+end_src
