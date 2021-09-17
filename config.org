@@ -70,6 +70,9 @@ be real personal programming career for me at last!
 ** LSP
 *** gdscript-mode
 
+#+begin_src emacs-lisp
+(setq gdscript-godot-executable "/Users/yamamotoryuuji/desktop/Godot.app/contents/MacOS/Godot")
+#+end_src
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 #+BEGIN_SRC emacs-lisp
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
@@ -91,17 +94,19 @@ It seems that I have same problem guys on the Github talked about.
 
 (use-package dap-mode)
 
-(require 'dap-chrome)
+(requirr 'dap-chrome)
 
-(dap-register-debug-template "Debug react-native"
-    (list :type "chrome"
-          :cwd nil
-          :mode "url"
-          :reqest "launch"
-          :webRoot "~/Desktop/Tokyo100/"
-          :url "http://localhost:19002"
-          :name "Debug react-native"
-))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (dap-register-debug-template "Debug react-native" ;;
+;;     (list :type "chrome"                          ;;
+;;           :cwd nil                                ;;
+;;           :mode "url"                             ;;
+;;           :reqest "launch"                        ;;
+;;           :webRoot "~/Desktop/Tokyo100/"          ;;
+;;           :url "http://localhost:19002"           ;;
+;;           :name "Debug react-native"              ;;
+;; ))                                                ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #+end_src
 ** CLISP
@@ -116,19 +121,18 @@ It seems that I have same problem guys on the Github talked about.
 ** Directory
 #+BEGIN_SRC emacs-lisp
 (when (string-equal system-type "darwin")
-
-(setq org-directory "~/MEGA/MEGAsync")
-)
+(setq org-directory "~/MEGA/MEGAsync"))
+ 
 (when (string-equal system-type "gnu/linux")
-(setq org-directory "~/MEGAsync")
-)
+(setq org-directory "~/MEGAsync"))
 
 #+END_SRC
 ** Journal
 #+BEGIN_SRC emacs-lisp
 (when (string-equal system-type "darwin")
 
-(setq org-journal-dir "~/MEGA/MEGAsync/journal" )
+(setq +org-capture-journal-file "~/MEGA/MEGAsync/journal" )
+
 )
 (when (string-equal system-type "gnu/linux")
 (setq org-journal-dir "~/MEGAsync/journal" )
@@ -150,10 +154,11 @@ It seems that I have same problem guys on the Github talked about.
 (with-eval-after-load 'org-journal
 (when (string-equal system-type "darwin")
 
-
   (setq org-agenda-files '("~/MEGA/MEGAsync/org"
                            "~/MEGA/MEGAsync/todo.org"
-                           "~/MEGA/MEGAsync/journal.org" )))
+                           "~/MEGA/MEGAsync/journal.org"
+                           "~/MEGA/MegaSyncFiles/todo.org"
+                           )))
 
 )
 (when (string-equal system-type "gnu/linux")

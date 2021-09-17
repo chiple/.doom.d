@@ -45,6 +45,8 @@
 
 (setq doom-theme 'doom-dracula)
 
+(setq gdscript-godot-executable "/Users/yamamotoryuuji/desktop/Godot.app/contents/MacOS/Godot")
+
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
   (if (string-equal major-mode "gdscript-mode")
       (let ((json-data (nth 0 args)))
@@ -58,31 +60,32 @@
 
 (use-package dap-mode)
 
-(require 'dap-chrome)
+(requirr 'dap-chrome)
 
-(dap-register-debug-template "Debug react-native"
-    (list :type "chrome"
-          :cwd nil
-          :mode "url"
-          :reqest "launch"
-          :webRoot "~/Desktop/Tokyo100/"
-          :url "http://localhost:19002"
-          :name "Debug react-native"
-))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (dap-register-debug-template "Debug react-native" ;;
+;;     (list :type "chrome"                          ;;
+;;           :cwd nil                                ;;
+;;           :mode "url"                             ;;
+;;           :reqest "launch"                        ;;
+;;           :webRoot "~/Desktop/Tokyo100/"          ;;
+;;           :url "http://localhost:19002"           ;;
+;;           :name "Debug react-native"              ;;
+;; ))                                                ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package sly)
 
 (when (string-equal system-type "darwin")
-
-(setq org-directory "~/MEGA/MEGAsync")
-)
+(setq org-directory "~/MEGA/MEGAsync"))
+ 
 (when (string-equal system-type "gnu/linux")
-(setq org-directory "~/MEGAsync")
-)
+(setq org-directory "~/MEGAsync"))
 
 (when (string-equal system-type "darwin")
 
-(setq org-journal-dir "~/MEGA/MEGAsync/journal" )
+(setq +org-capture-journal-file "~/MEGA/MEGAsync/journal" )
+
 )
 (when (string-equal system-type "gnu/linux")
 (setq org-journal-dir "~/MEGAsync/journal" )
@@ -101,10 +104,11 @@
 (with-eval-after-load 'org-journal
 (when (string-equal system-type "darwin")
 
-
   (setq org-agenda-files '("~/MEGA/MEGAsync/org"
                            "~/MEGA/MEGAsync/todo.org"
-                           "~/MEGA/MEGAsync/journal.org" )))
+                           "~/MEGA/MEGAsync/journal.org"
+                           "~/MEGA/MegaSyncFiles/todo.org"
+                           )))
 
 )
 (when (string-equal system-type "gnu/linux")
