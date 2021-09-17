@@ -60,7 +60,7 @@
 
 (use-package dap-mode)
 
-(requirr 'dap-chrome)
+(require 'dap-chrome)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dap-register-debug-template "Debug react-native" ;;
@@ -77,10 +77,13 @@
 (use-package sly)
 
 (when (string-equal system-type "darwin")
-(setq org-directory "~/MEGA/MEGAsync"))
- 
+
+(setq org-directory "~/MEGA/MEGAsync")
+
+)
 (when (string-equal system-type "gnu/linux")
-(setq org-directory "~/MEGAsync"))
+(setq org-directory "~/MEGAsync")
+)
 
 (when (string-equal system-type "darwin")
 

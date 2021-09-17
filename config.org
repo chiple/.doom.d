@@ -94,7 +94,7 @@ It seems that I have same problem guys on the Github talked about.
 
 (use-package dap-mode)
 
-(requirr 'dap-chrome)
+(require 'dap-chrome)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dap-register-debug-template "Debug react-native" ;;
@@ -121,10 +121,13 @@ It seems that I have same problem guys on the Github talked about.
 ** Directory
 #+BEGIN_SRC emacs-lisp
 (when (string-equal system-type "darwin")
-(setq org-directory "~/MEGA/MEGAsync"))
- 
+
+(setq org-directory "~/MEGA/MEGAsync")
+
+)
 (when (string-equal system-type "gnu/linux")
-(setq org-directory "~/MEGAsync"))
+(setq org-directory "~/MEGAsync")
+)
 
 #+END_SRC
 ** Journal
