@@ -4,12 +4,8 @@
        :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
 
 (map! :leader
-      :desc "shell"
-      "s h" #'shell)
-
-(map! :leader
-      :desc "launch Web Browser with rich tools"
-      "o w"#'xwidget-webkit-browse-url)
+      :desc "eww"
+      "b o"#'eww)
 
 (map! :leader
       :desc "Org-roam-server"
@@ -41,13 +37,17 @@
 
 (map! :leader
       :desc "org-table"
-      "e s" #'eshell)
+      "s h" #'eshell)
+(map! :leader
+      :desc "zoom"
+      "z z" #'+hydra/text-zoom/body)
 
 (setq doom-theme 'doom-dracula)
 
 (setq gdscript-godot-executable "/Users/yamamotoryuuji/desktop/Godot.app/contents/MacOS/Godot")
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
+  "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
   (if (string-equal major-mode "gdscript-mode")
       (let ((json-data (nth 0 args)))
         (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
@@ -56,6 +56,7 @@
             nil ; (message "Method not found")
           (apply original-function args)))
     (apply original-function args)))
+;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 
 (use-package dap-mode)
@@ -181,6 +182,7 @@
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
 (add-to-list 'org-structure-template-alist '("aw" . "src awk"))
 (add-to-list 'org-structure-template-alist '("sh" . "src sh"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
@@ -196,6 +198,8 @@
  '(lisp . t)
  '(awk . t)
  '(shell . t)
+ '(python . t)
+ 
  )
 
 (with-eval-after-load 'magit

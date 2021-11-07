@@ -20,12 +20,8 @@ be real personal programming career for me at last!
 * key-bindings
 #+BEGIN_SRC emacs-lisp
 (map! :leader
-      :desc "shell"
-      "s h" #'shell)
-
-(map! :leader
-      :desc "launch Web Browser with rich tools"
-      "o w"#'xwidget-webkit-browse-url)
+      :desc "eww"
+      "b o"#'eww)
 
 (map! :leader
       :desc "Org-roam-server"
@@ -57,8 +53,10 @@ be real personal programming career for me at last!
 
 (map! :leader
       :desc "org-table"
-      "e s" #'eshell)
-
+      "s h" #'eshell)
+(map! :leader
+      :desc "zoom"
+      "z z" #'+hydra/text-zoom/body)
 
 
 #+END_SRC
@@ -69,13 +67,11 @@ be real personal programming career for me at last!
 * Langs and Dev
 ** LSP
 *** gdscript-mode
-
 #+begin_src emacs-lisp
 (setq gdscript-godot-executable "/Users/yamamotoryuuji/desktop/Godot.app/contents/MacOS/Godot")
-#+end_src
-;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
-#+BEGIN_SRC emacs-lisp
+
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
+  "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
   (if (string-equal major-mode "gdscript-mode")
       (let ((json-data (nth 0 args)))
         (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
@@ -84,9 +80,9 @@ be real personal programming career for me at last!
             nil ; (message "Method not found")
           (apply original-function args)))
     (apply original-function args)))
+;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
-
-#+END_SRC
+#+end_src
 ** TODO Debugging
 I've figured out that from buffer list, I can read the some stderr.
 It seems that I have same problem guys on the Github talked about.
@@ -250,6 +246,7 @@ It seems that I have same problem guys on the Github talked about.
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
 (add-to-list 'org-structure-template-alist '("aw" . "src awk"))
 (add-to-list 'org-structure-template-alist '("sh" . "src sh"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
 #+end_src
 
 *** tangle
@@ -270,6 +267,8 @@ It seems that I have same problem guys on the Github talked about.
  '(lisp . t)
  '(awk . t)
  '(shell . t)
+ '(python . t)
+ 
  )
 
 #+end_src
