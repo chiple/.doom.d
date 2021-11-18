@@ -127,6 +127,7 @@ It seems that I have same problem guys on the Github talked about.
 #+end_src
 
 * Org
+
 ** Directory
 #+BEGIN_SRC emacs-lisp
 (when (string-equal system-type "darwin")
@@ -139,9 +140,6 @@ It seems that I have same problem guys on the Github talked about.
 )
 
 #+END_SRC
-** org-roam-ui
-<el
-
 ** Journal
 #+BEGIN_SRC emacs-lisp
 (when (string-equal system-type "darwin")
@@ -224,45 +222,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           (alltodo ""
                    ((org-agenda-skip-function
                      '(or (air-org-skip-subtree-if-priority ?A)
-                          (org-agenda-skip-if nil '(scheduled deadline)))))))))
-      '(("d" "Today"
-         ((agenda "会議など"
-                  ((org-agenda-span 'day)
-                   (org-agenda-files my/org-agenda-calendar-files)))
-          (tags-todo "-Weekday-Daily-Holiday-Weekly-Weekend"
-                     ((org-agenda-prefix-format " ")
-                      (org-agenda-overriding-header "今日の作業")
-                      (org-habit-show-habits nil)
-                      (org-agenda-span 'day)
-                      (org-agenda-todo-keyword-format "-")
-                      (org-overriding-columns-format "%25ITEM %TODO")
-                      (org-agenda-files '("~/Documents/org/tasks/next-actions.org"))
-                      (org-super-agenda-groups '((:name "仕掛かり中" :todo "DOING")
-                                                 (:name "TODO" :todo "TODO")
-                                                 (:name "待ち" :todo "WAIT")
-                                                 (:discard (:anything t))))))
-          (alltodo ""
-                   ((org-agenda-prefix-format " ")
-                    (org-agenda-overriding-header "予定作業")
-                    (org-habit-show-habits nil)
-                    (org-agenda-span 'day)
-                    (org-agenda-todo-keyword-format "-")
-                    (org-overriding-columns-format "%25ITEM %TODO")
-                    (org-agenda-files '("~/Documents/org/tasks/projects.org"))
-                    (org-super-agenda-groups '((:name "〆切が過ぎてる作業" :deadline past)
-                                               (:name "予定が過ぎてる作業" :scheduled past)
-                                               (:name "今日〆切の作業" :deadline today)
-                                               (:name "今日予定の作業" :scheduled today)
-                                               (:discard (:anything t))))))
-          (tags-todo "Weekday|Daily|Weekly"
-                     ((org-agenda-overriding-header "習慣")
-                      (org-habit-show-habits t)
-                      (org-agenda-files '("~/Documents/org/tasks/next-actions.org"))
-                      (org-super-agenda-groups '((:name "予定が過ぎてる作業" :scheduled past)
-                                                 (:name "今日予定" :scheduled today)
-                                                 (:discard (:anything t)))))))))
-      )
-
+                          (org-agenda-skip-if nil '(scheduled deadline))))))))))
 #+end_src
 ** Org-roam-server
 #+BEGIN_SRC emacs-lisp
@@ -290,31 +250,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ;;         org-roam-server-network-label-truncate t                          ;;
 ;;         org-roam-server-network-label-truncate-length 60                  ;;
 ;;         org-roam-server-network-label-wrap-length 20)                     ;;
+;; )                                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;)
 #+END_SRC
 ** org-roam-ui
 
 #+begin_src emacs-lisp
-(let ((org-id-locations org-roam-directory)
-      org-agenda-files)
-  (org-id-update-id-locations))
-
-(use-package! websocket
-    :after org-roam)
-
-(use-package! org-roam-ui
-    :after org-roam ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-    :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
-
 
 #+END_SRC
 
