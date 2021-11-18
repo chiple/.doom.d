@@ -5,7 +5,13 @@
 
 (map! :leader
       :desc "eww"
-      "b o"#'eww)
+      "f j"#'ranger)
+
+
+
+(map! :leader
+      :desc "eww"
+      "p l"#'prettify-symbols-mode)
 
 (map! :leader
       :desc "Org-roam-server"
@@ -77,6 +83,8 @@
 
 (use-package sly)
 
+(use-package! coconut-mode)
+
 (when (string-equal system-type "darwin")
 
 (setq org-directory "~/MEGA/MEGAsync")
@@ -126,31 +134,118 @@
       '((1.0001 . org-warning)              ; due yesterday or before
         (0.0    . org-upcoming-deadline)))  ; due today or later
 
+(defun air-org-skip-subtree-if-habit ()
+  "Skip an agenda entry if it has a STYLE property equal to \"habit\"."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+    (if (string= (org-entry-get nil "STYLE") "habit")
+        subtree-end
+      nil)))
 
+(defun air-org-skip-subtree-if-priority (priority)
+  "Skip an agenda subtree if it has a priority of PRIORITY.
 
-(when (string-equal system-type "darwin")
- (setq org-roam-server-file-path "/Users/yamamotoryuuji/org-roam-server")
-)
-(when (string-equal system-type "gnu/linux")
- (setq org-roam-server-file-path "/home/ryu/org-roam-server")
-)
-(use-package org-roam-server
-  :ensure t
-  :load-path org-roam-server-file-path
-  :config
-  :init
-  (setq org-roam-server-host "127.0.0.1"
-        org-roam-server-port 8080
-        org-roam-server-authenticate nil
-        org-roam-server-export-inline-images t
-        org-roam-server-serve-files nil
-        org-roam-server-served-file-extensions '("pdf" "mp4" "ogv")
-        org-roam-server-network-poll t
-        org-roam-server-network-arrows nil
-        org-roam-server-network-label-truncate t
-        org-roam-server-network-label-truncate-length 60
-        org-roam-server-network-label-wrap-length 20)
-)
+PRIORITY may be one of the characters ?A, ?B, or ?C."
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (pri-value (* 1000 (- org-lowest-priority priority)))
+        (pri-current (org-get-priority (thing-at-point 'line t))))
+    (if (= pri-value pri-current)
+        subtree-end
+      nil)))
+
+(setq org-agenda-span 1)
+
+(setq org-agenda-custom-commands
+      '(("n" "🐕イヌール🐕"
+         ((tags "PRIORITY=\"A\""
+                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                 (org-agenda-overriding-header "High-priority unfinished tasks:")))
+          (agenda "")
+          (alltodo ""
+                   ((org-agenda-skip-function
+                     '(or (air-org-skip-subtree-if-priority ?A)
+                          (org-agenda-skip-if nil '(scheduled deadline)))))))))
+      '(("d" "Today"
+         ((agenda "会議など"
+                  ((org-agenda-span 'day)
+                   (org-agenda-files my/org-agenda-calendar-files)))
+          (tags-todo "-Weekday-Daily-Holiday-Weekly-Weekend"
+                     ((org-agenda-prefix-format " ")
+                      (org-agenda-overriding-header "今日の作業")
+                      (org-habit-show-habits nil)
+                      (org-agenda-span 'day)
+                      (org-agenda-todo-keyword-format "-")
+                      (org-overriding-columns-format "%25ITEM %TODO")
+                      (org-agenda-files '("~/Documents/org/tasks/next-actions.org"))
+                      (org-super-agenda-groups '((:name "仕掛かり中" :todo "DOING")
+                                                 (:name "TODO" :todo "TODO")
+                                                 (:name "待ち" :todo "WAIT")
+                                                 (:discard (:anything t))))))
+          (alltodo ""
+                   ((org-agenda-prefix-format " ")
+                    (org-agenda-overriding-header "予定作業")
+                    (org-habit-show-habits nil)
+                    (org-agenda-span 'day)
+                    (org-agenda-todo-keyword-format "-")
+                    (org-overriding-columns-format "%25ITEM %TODO")
+                    (org-agenda-files '("~/Documents/org/tasks/projects.org"))
+                    (org-super-agenda-groups '((:name "〆切が過ぎてる作業" :deadline past)
+                                               (:name "予定が過ぎてる作業" :scheduled past)
+                                               (:name "今日〆切の作業" :deadline today)
+                                               (:name "今日予定の作業" :scheduled today)
+                                               (:discard (:anything t))))))
+          (tags-todo "Weekday|Daily|Weekly"
+                     ((org-agenda-overriding-header "習慣")
+                      (org-habit-show-habits t)
+                      (org-agenda-files '("~/Documents/org/tasks/next-actions.org"))
+                      (org-super-agenda-groups '((:name "予定が過ぎてる作業" :scheduled past)
+                                                 (:name "今日予定" :scheduled today)
+                                                 (:discard (:anything t)))))))))
+      )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (when (string-equal system-type "darwin")                                 ;;
+;;  (setq org-roam-server-file-path "/Users/yamamotoryuuji/org-roam-server") ;;
+;; )                                                                         ;;
+;; (when (string-equal system-type "gnu/linux")                              ;;
+;;  (setq org-roam-server-file-path "/home/ryu/org-roam-server")             ;;
+;; )                                                                         ;;
+;; (use-package org-roam-server                                              ;;
+;;   :ensure t                                                               ;;
+;;   :load-path org-roam-server-file-path                                    ;;
+;;   :config                                                                 ;;
+;;   :init                                                                   ;;
+;;   (setq org-roam-server-host "127.0.0.1"                                  ;;
+;;         org-roam-server-port 8080                                         ;;
+;;         org-roam-server-authenticate nil                                  ;;
+;;         org-roam-server-export-inline-images t                            ;;
+;;         org-roam-server-serve-files nil                                   ;;
+;;         org-roam-server-served-file-extensions '("pdf" "mp4" "ogv")       ;;
+;;         org-roam-server-network-poll t                                    ;;
+;;         org-roam-server-network-arrows nil                                ;;
+;;         org-roam-server-network-label-truncate t                          ;;
+;;         org-roam-server-network-label-truncate-length 60                  ;;
+;;         org-roam-server-network-label-wrap-length 20)                     ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;)
+
+(let ((org-id-locations org-roam-directory)
+      org-agenda-files)
+  (org-id-update-id-locations))
+
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+    :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 
 (use-package org-pomodoro
     :after org-agenda
@@ -206,3 +301,10 @@
   (require 'forge))
 
 
+
+(defun my-pretty-lambda ()
+  (setq prettify-symbols-alist '(("lambda" . 955))))
+(add-hook 'python-mode 'my-pretty-lambda)
+(add-hook 'lisp-mode 'pretitfy-symbols-mode)
+(add-hook 'python-mode 'pretitfy-symbols-mode)
+(add-hook 'lisp-mode 'my-pretty-lambda)
