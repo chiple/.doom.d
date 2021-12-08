@@ -34,10 +34,6 @@
       "f f" #'find-file)
 
 (map! :leader
-      :desc "open irb script"
-      "r r" #'run-ruby)
-
-(map! :leader
       :desc "org-table"
       "t o" #'org-table-create)
 
@@ -48,7 +44,28 @@
       :desc "zoom"
       "z z" #'+hydra/text-zoom/body)
 
-(setq doom-theme 'doom-dracula)
+(map! :leader
+      :desc "snippets-find"
+      "s n o" #'+snippets/find)
+
+(map! :leader
+      :desc "snippets-insert"
+      "s n i" #'+snippets/new)
+
+(map! :leader
+      :desc "snippets-edit"
+      "s n e" #'+snippets/edit)
+
+(use-package doom-themes
+    :custom
+    (doom-themes-enable-italic t)
+    (doom-themes-enable-bold t)
+    :custom-face
+    (doom-modeline-bar ((t (:background "#6272a4"))))
+    :config
+    (load-theme 'doom-dracula t)
+    (doom-themes-neotree-config )
+    (doom-themes-org-config))
 
 (setq gdscript-godot-executable "/Users/yamamotoryuuji/desktop/Godot.app/contents/MacOS/Godot")
 
@@ -65,9 +82,7 @@
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 
-(use-package dap-mode)
-
-(require 'dap-chrome)
+(require 'ob-fish)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (dap-register-debug-template "Debug react-native" ;;
@@ -84,6 +99,8 @@
 (use-package sly)
 
 (use-package! coconut-mode)
+
+(require 'org-habit)
 
 (when (string-equal system-type "darwin")
 
@@ -152,18 +169,19 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         subtree-end
       nil)))
 
-(setq org-agenda-span 1)
-
 (setq org-agenda-custom-commands
-      '(("n" "🐕イヌール🐕"
+      '(("n" "🐕🐕🐩🐕🐕"
          ((tags "PRIORITY=\"A\""
                 ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
                  (org-agenda-overriding-header "High-priority unfinished tasks:")))
-          (agenda "")
+          (agenda "" ((org-agenda-span 4)))
           (alltodo ""
                    ((org-agenda-skip-function
                      '(or (air-org-skip-subtree-if-priority ?A)
-                          (org-agenda-skip-if nil '(scheduled deadline))))))))))
+                          (org-agenda-skip-if nil '(scheduled deadline))))))))
+        ("w" "🐩🐩🐕🐩🐩"
+         ((alltodo ""
+                   (org-habit-show-habits t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (when (string-equal system-type "darwin")                                 ;;
@@ -191,7 +209,41 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ;; )                                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(use-package! org-download
+  :after org
+  :config
+  (setq-default org-download-image-dir "./images/"
+                ;; org-download-screenshot-method "flameshot gui --raw > %s"
+                org-download-delete-image-after-download t
+                org-download-method 'directory
+                org-download-heading-lvl 1
+                org-download-screenshot-file "/tmp/screenshot.png"
+                )
+  (cond (IS-LINUX (setq-default org-download-screenshot-method "xclip -selection clipboard -t image/png -o > %s"))
+        (IS-MAC (setq-default org-download-screenshot-method "screencapture -i %s")))
+  )
 
+(setq org-roam-directory "/Users/yamamotoryuuji/MEGA/MEGAsync/roam")
+
+(use-package org-roam-bibtex
+  :after org-roam
+  :config
+  (require 'org-ref))
+
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+    :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 
 (use-package org-pomodoro
     :after org-agenda
@@ -216,14 +268,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     :bind (:map org-agenda-mode-map
                 ("p" . org-pomodoro)))
 
+;;      :custom (org-bullets-bullet-list '())
 (setq org-startup-folded t)
+
+(setq
+    org-superstar-headline-bullets-list '("🌜" "🐩" "🐈" "🐕")
+)
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
 (add-to-list 'org-structure-template-alist '("aw" . "src awk"))
-(add-to-list 'org-structure-template-alist '("sh" . "src sh"))
+(add-to-list 'org-structure-template-alist '("fi" . "src fish"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
@@ -234,19 +292,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
+
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(lisp . t)
  '(awk . t)
- '(shell . t)
+ '(fish . t)
  '(python . t)
- 
+ '(haskell. t)
+ '(C++ . t)
+
  )
-
-(with-eval-after-load 'magit
-  (require 'forge))
-
-
 
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
@@ -254,3 +310,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-hook 'lisp-mode 'pretitfy-symbols-mode)
 (add-hook 'python-mode 'pretitfy-symbols-mode)
 (add-hook 'lisp-mode 'my-pretty-lambda)
+
+(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
+
+
+
+ (defun bitlbee ()
+   (interactive)
+   (circe "localhost" "6667" "bitlbee")
+   (save-window-excursion
+     (set-buffer "localhost:6667")
+     (with-circe-server-buffer
+       (circe-server-send
+        (format "PRIVMSG &bitlbee :identify %s"
+                my-bitlbee-password)))))

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: email-to-upperpos
+# uuid: email-to-upperpos
+# key: trigger-key org-mode
+# condition: t
+# --
+
+`いつもお世話になっております。山本です。`

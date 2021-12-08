@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: asdf
+# uuid:
+# key: trigger-key
+# condition: t
+# --
+
+asdf

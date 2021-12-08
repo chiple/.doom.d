@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: pythontemp
+# key: pyyy
+# --
+
+#+begin_src python :results output
+
+#+end_src
