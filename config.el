@@ -223,8 +223,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         (IS-MAC (setq-default org-download-screenshot-method "screencapture -i %s")))
   )
 
-(setq org-roam-directory "/Users/yamamotoryuuji/MEGA/MEGAsync/roam")
-
+(setq org-roam-directory "/Users/yamamotoryuuji/Creative Cloud Files/roam"
 (use-package org-roam-bibtex
   :after org-roam
   :config
@@ -301,6 +300,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(python . t)
  '(haskell. t)
  '(C++ . t)
+ '(dot . t)
+
 
  )
 
@@ -312,15 +313,3 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-hook 'lisp-mode 'my-pretty-lambda)
 
 (set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
-
-
-
- (defun bitlbee ()
-   (interactive)
-   (circe "localhost" "6667" "bitlbee")
-   (save-window-excursion
-     (set-buffer "localhost:6667")
-     (with-circe-server-buffer
-       (circe-server-send
-        (format "PRIVMSG &bitlbee :identify %s"
-                my-bitlbee-password)))))

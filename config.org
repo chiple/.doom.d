@@ -294,8 +294,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ** org-roam-ui
 
 #+begin_src emacs-lisp
-(setq org-roam-directory "/Users/yamamotoryuuji/MEGA/MEGAsync/roam")
-
+(setq org-roam-directory "/Users/yamamotoryuuji/Creative Cloud Files/roam"
 (use-package org-roam-bibtex
   :after org-roam
   :config
@@ -319,7 +318,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+END_SRC
 
-** Pomodoro
+*** Pomodoro
 #+BEGIN_SRC emacs-lisp
 (use-package org-pomodoro
     :after org-agenda
@@ -349,7 +348,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+RESULTS:
 : org-pomodoro
 
-** Startup settings
+*** Startup settings
 #+begin_src emacs-lisp
 ;;      :custom (org-bullets-bullet-list '())
 (setq org-startup-folded t)
@@ -358,8 +357,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     org-superstar-headline-bullets-list '("🌜" "🐩" "🐈" "🐕")
 )
 #+end_src
-** Babel
-*** Template
+*** Babel
+**** Template
 #+BEGIN_SRC emacs-lisp
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
@@ -370,8 +369,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 #+end_src
 
-*** tangle
-**** TODO Automatically tangle our Emacs.org config file when we save it
+**** tangle
+***** TODO Automatically tangle our Emacs.org config file when we save it
 #+begin_src emacs-lisp
 
 (defun efs/org-babel-tangle-config ()
@@ -392,6 +391,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(python . t)
  '(haskell. t)
  '(C++ . t)
+ '(dot . t)
+
 
  )
 
@@ -399,10 +400,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+RESULTS:
 | (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) | er/add-org-mode-expansions | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | (lambda (&rest _) #'(lambda nil (add-hook 'after-save-hook #'org-babel-tangle :append :local))) | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | +org-enable-auto-reformat-tables-h | +org-enable-auto-update-cookies-h | +org-make-last-point-visible-h | evil-org-mode | toc-org-enable | embrace-org-mode-hook | org-eldoc-load |
+**** dot
+** EXWM
 
-* EXWM
-
-** TODO exit the process where the current buffer exist.
+*** TODO exit the process where the current buffer exist.
 #+begin_src emacs-lisp :tangle no
 (require 'exwm)
 (require 'exwm-config)
@@ -419,7 +420,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (exwm-systemtray-enable)
 #+end_src
 
-* PREFERENCE
+** PREFERENCE
 
 #+begin_src emacs-lisp
 (defun my-pretty-lambda ()
@@ -432,20 +433,4 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+begin_src emacs-lisp
 (set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
 
-#+end_src
-* Driver
-** controller
-#+begin_src emacs-lisp
-#+end_src
-* Circe
-#+begin_src emacs-lisp
- (defun bitlbee ()
-   (interactive)
-   (circe "localhost" "6667" "bitlbee")
-   (save-window-excursion
-     (set-buffer "localhost:6667")
-     (with-circe-server-buffer
-       (circe-server-send
-        (format "PRIVMSG &bitlbee :identify %s"
-                my-bitlbee-password)))))
 #+end_src
