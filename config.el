@@ -223,7 +223,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         (IS-MAC (setq-default org-download-screenshot-method "screencapture -i %s")))
   )
 
-(setq org-roam-directory "/Users/yamamotoryuuji/Creative Cloud Files/roam"
+(setq org-roam-directory "/Users/yamamotoryuuji/Creative Cloud Files/roam")
 (use-package org-roam-bibtex
   :after org-roam
   :config
@@ -307,9 +307,16 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
-(add-hook 'python-mode 'my-pretty-lambda)
-(add-hook 'lisp-mode 'pretitfy-symbols-mode)
-(add-hook 'python-mode 'pretitfy-symbols-mode)
-(add-hook 'lisp-mode 'my-pretty-lambda)
+(add-hook 'python-mode-hook 'my-pretty-lambda)
+(add-hook 'python-mode-hook 'prettify-symbols-mode)
+(add-hook 'org-mode-hook 'my-pretty-lambda)
+(add-hook 'org-mode-hook 'prettify-symbols-mode)
+(add-hook 'lisp-mode-hook 'my-pretty-lambda)
+(add-hook 'lisp-mode-hook 'prettify-symbols-mode)
 
-(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
+(defun font-set-yay ()
+(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック")))
+
+(add-hook 'emacs-startup-hook 'font-set-yay)
+
+
