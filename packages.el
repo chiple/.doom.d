@@ -24,7 +24,20 @@
 (package! circe
   :recipe (:host github :repo "emacs-circe/circe"))
 
+(package! org-tree-slide
+  :recipe (:host github :repo "takaxp/org-tree-slide"))
 
+(package! request
+  :recipe (:host github :repo "tkf/emacs-request"))
+
+(package! ergantt
+  :recipe (:host github :repo "legalnonsense/elgantt"))
+
+(package! org-ql
+  :recipe (:host github :repo "alphapapa/org-ql"))
+
+(package! ace-window
+  :recipe (:host github :repo "abo-abo/ace-window"))
 
 
 (unpin! org-roam company-org-roam)

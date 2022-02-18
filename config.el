@@ -4,28 +4,6 @@
        :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
 
 (map! :leader
-      :desc "eww"
-      "f j"#'ranger)
-
-
-
-(map! :leader
-      :desc "eww"
-      "p l"#'prettify-symbols-mode)
-
-(map! :leader
-      :desc "Org-roam-server"
-      "r s" #'org-roam-server-mode)
-
-(map! :leader
-      :desc "run sly"
-      "a" #'sly)
-
-(map! :leader
-      :desc "dmenu"
-      "d" #'dmenu)
-
-(map! :leader
       :desc "tangle"
       "o t" #'org-babel-tangle)
 
@@ -43,6 +21,43 @@
 (map! :leader
       :desc "zoom"
       "z z" #'+hydra/text-zoom/body)
+(map! :leader
+      :desc "org-slide-start"
+      "o s s" #'org-tree-slide-mode)
+
+(map! :leader
+      :desc "org-slide-right"
+      "o s l" #'org-tree-slide-move-next-tree)
+
+(map! :leader
+      :desc "org-quote"
+      "o q" #'tempo-template-org-quote)
+
+(map! :leader
+      :desc "org-quote"
+      "g n" #'elgantt-open)
+
+(map! :leader
+      :desc "右下がアジェンダ、左下がシェルです。"
+      "l 1" #'split-screen-1)
+
+(map! :leader
+      :desc "clisp用のです"
+      "l c l" #'split-screen-3)
+
+
+(map! :leader
+      :desc "contest用（ABCの）"
+      "l c o" #'split-screen-4)
+
+(map! :leader
+      :desc "contest用（ABCの）"
+      "l c o" #'split-screen-4)
+
+(map! :leader
+      :desc "ace-window"
+      "a c" #'ace-window)
+(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
 (map! :leader
       :desc "snippets-find"
@@ -55,6 +70,47 @@
 (map! :leader
       :desc "snippets-edit"
       "s n e" #'+snippets/edit)
+
+(map! :leader
+      :desc "heml kill ring"
+      "k r" #'helm-show-kill-ring)
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+(global-set-key  (kbd "C-j") 'move-line-down)
+(global-set-key (kbd "C-k")  'move-line-up)
+
+;;クリップボードにPwd
+(map! :leader
+      :desc "evil-pwd"
+      "p w"#'+evil:pwd)
+
+(map! :leader
+      :desc "ranger"
+      "f j"#'ranger)
+
+(map! :leader
+      :desc "man page"
+      "d c"#'man)
+
+(map! :leader
+      :desc "run sly"
+      "a a" #'sly)
+
+(map! :leader
+      :desc  "hydra gd"
+      "g d"#'gdscript-hydra-show)
 
 (use-package doom-themes
     :custom
@@ -82,38 +138,27 @@
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 
-(require 'ob-fish)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (dap-register-debug-template "Debug react-native" ;;
-;;     (list :type "chrome"                          ;;
-;;           :cwd nil                                ;;
-;;           :mode "url"                             ;;
-;;           :reqest "launch"                        ;;
-;;           :webRoot "~/Desktop/Tokyo100/"          ;;
-;;           :url "http://localhost:19002"           ;;
-;;           :name "Debug react-native"              ;;
-;; ))                                                ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (use-package sly)
 
 (use-package! coconut-mode)
+(add-to-list 'auto-mode-alist '("\\.coco\\'" . coconut-mode))
+
+(use-package! request)
 
 (require 'org-habit)
 
 (when (string-equal system-type "darwin")
 
-(setq org-directory "~/MEGA/MEGAsync")
+(setq org-directory "~/org")
 
 )
 (when (string-equal system-type "gnu/linux")
-(setq org-directory "~/MEGAsync")
+(setq org-directory "~/org")
 )
 
 (when (string-equal system-type "darwin")
 
-(setq +org-capture-journal-file "~/MEGA/MEGAsync/journal" )
+(setq +org-capture-journal-file "~/org" )
 
 )
 (when (string-equal system-type "gnu/linux")
@@ -134,15 +179,13 @@
 (when (string-equal system-type "darwin")
 
   (setq org-agenda-files '("~/MEGA/MEGAsync/org"
-                           "~/MEGA/MEGAsync/todo.org"
-                           "~/MEGA/MEGAsync/journal.org"
-                           "~/MEGA/MegaSyncFiles/todo.org"
+                           "~/org/todo.org"
                            )))
 
 )
 (when (string-equal system-type "gnu/linux")
 
-  (setq org-agenda-files '("~/MEGAsync/org")))
+  (setq org-agenda-files '("~/org")))
 
 
 (setq org-agenda-clockreport-parameter-plist
@@ -183,32 +226,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          ((alltodo ""
                    (org-habit-show-habits t))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (when (string-equal system-type "darwin")                                 ;;
-;;  (setq org-roam-server-file-path "/Users/yamamotoryuuji/org-roam-server") ;;
-;; )                                                                         ;;
-;; (when (string-equal system-type "gnu/linux")                              ;;
-;;  (setq org-roam-server-file-path "/home/ryu/org-roam-server")             ;;
-;; )                                                                         ;;
-;; (use-package org-roam-server                                              ;;
-;;   :ensure t                                                               ;;
-;;   :load-path org-roam-server-file-path                                    ;;
-;;   :config                                                                 ;;
-;;   :init                                                                   ;;
-;;   (setq org-roam-server-host "127.0.0.1"                                  ;;
-;;         org-roam-server-port 8080                                         ;;
-;;         org-roam-server-authenticate nil                                  ;;
-;;         org-roam-server-export-inline-images t                            ;;
-;;         org-roam-server-serve-files nil                                   ;;
-;;         org-roam-server-served-file-extensions '("pdf" "mp4" "ogv")       ;;
-;;         org-roam-server-network-poll t                                    ;;
-;;         org-roam-server-network-arrows nil                                ;;
-;;         org-roam-server-network-label-truncate t                          ;;
-;;         org-roam-server-network-label-truncate-length 60                  ;;
-;;         org-roam-server-network-label-wrap-length 20)                     ;;
-;; )                                                                         ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (use-package! org-download
   :after org
   :config
@@ -222,27 +239,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (cond (IS-LINUX (setq-default org-download-screenshot-method "xclip -selection clipboard -t image/png -o > %s"))
         (IS-MAC (setq-default org-download-screenshot-method "screencapture -i %s")))
   )
-
-(setq org-roam-directory "/Users/yamamotoryuuji/Creative Cloud Files/roam")
-(use-package org-roam-bibtex
-  :after org-roam
-  :config
-  (require 'org-ref))
-
-(use-package! websocket
-    :after org-roam)
-
-(use-package! org-roam-ui
-    :after org ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-    :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
 
 (use-package org-pomodoro
     :after org-agenda
@@ -271,7 +267,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq org-startup-folded t)
 
 (setq
-    org-superstar-headline-bullets-list '("🌜" "🐩" "🐈" "🐕")
+    org-superstar-headline-bullets-list '("♁" "☾" "☿" "♀" "☉" "♂" "♃" "♄")
 )
 
 (require 'org-tempo)
@@ -305,6 +301,85 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
  )
 
+(after! org-roam
+(setq org-roam-capture-templates
+      '(("d" "default" plain
+         "%?"
+         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+         :unnarrowed t)
+
+        ("l" "programming language" plain
+         "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+         :unnarrowed t)
+
+        ("b" "book notes" plain
+         "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+         :unnarrowed t)
+        ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+         :unnarrowed t)
+        )))
+
+(setq org-roam-directory "/Users/yamamotoryuuji/roam")
+(use-package org-roam-bibtex
+  :after org-roam
+  :config
+  (require 'org-ref))
+
+(use-package! websocket
+    :after org-roam)
+
+(use-package! org-roam-ui
+    :after org ;; or :after org
+         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+         a hookable mode anymore, you're advised to pick something yourself
+         if you don't care about startup time, use
+    :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+         org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+         org-roam-ui-open-on-start t))
+
+(setq org-roam-dailies-directory "/Users/yamamotoryuuji/roam/journal")
+
+(use-package! elgantt)
+
+(setq elgantt-user-set-color-priority-counter 0)
+(elgantt-create-display-rule draw-scheduled-to-deadline
+  :parser ((elgantt-color . ((when-let ((colors (org-entry-get (point) "ELGANTT-COLOR")))
+                               (s-split " " colors)))))
+  :args (elgantt-scheduled elgantt-color elgantt-org-id)
+  :body ((when elgantt-scheduled
+           (let ((point1 (point))
+                 (point2 (save-excursion
+                           (elgantt--goto-date elgantt-scheduled)
+                           (point)))
+                 (color1 (or (car elgantt-color)
+                             "black"))
+                 (color2 (or (cadr elgantt-color)
+                             "red")))
+             (when (/= point1 point2)
+               (elgantt--draw-gradient
+                color1
+                color2
+                (if (< point1 point2) point1 point2) ;; Since cells are not necessarily linked in
+                (if (< point1 point2) point2 point1) ;; chronological order, make sure they are sorted
+                nil
+                `(priority ,(setq elgantt-user-set-color-priority-counter
+                                  (1- elgantt-user-set-color-priority-counter))
+                           ;; Decrease the priority so that earlier entries take
+                           ;; precedence over later ones (note: it doesn’t matter if the number is negative)
+                           :elgantt-user-overlay ,elgantt-org-id)))))))
+
+(setq elgantt-header-type 'outline
+      elgantt-insert-blank-line-between-top-level-header t
+      elgantt-startup-folded nil
+      elgantt-show-header-depth t
+      elgantt-draw-overarching-headers t)
+
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
 (add-hook 'python-mode-hook 'my-pretty-lambda)
@@ -313,10 +388,63 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-hook 'org-mode-hook 'prettify-symbols-mode)
 (add-hook 'lisp-mode-hook 'my-pretty-lambda)
 (add-hook 'lisp-mode-hook 'prettify-symbols-mode)
+(add-hook 'emacs-lisp-mode-hook 'my-pretty-lambda)
+(add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
 
 (defun font-set-yay ()
 (set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック")))
 
+(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
 (add-hook 'emacs-startup-hook 'font-set-yay)
 
+(defun split-screen-1 ()
+  (interactive)
+  (progn
+  (evil-window-split)
+  (next-window-any-frame)
+  (shrink-window 15)
+  (evil-window-vsplit)
+  (eshell)
+  (next-window-any-frame)
+  (org-agenda :key "n")
+  (next-window-any-frame)
+    ))
 
+(defun split-screen-2 ()
+  (interactive)
+  (progn
+  (evil-window-vsplit)
+  (evil-window-split)
+  (shrink-window 15)
+  (evil-window-vsplit)
+  (eshell)
+  (next-window-any-frame)
+  (org-agenda :key "n")
+  (next-window-any-frame)
+    ))
+
+(defun split-screen-3 ()
+  (interactive)
+  (progn
+  (evil-window-vsplit)
+  (find-file "~/edu/clisp")
+  (next-window-any-frame)
+  (sly)
+  (evil-window-vsplit)
+  (org-roam-ref-find "clisp")
+  ))
+
+(defun split-screen-4 ()
+  (interactive)
+  (progn
+    (let ((contest-num (read-string "What is the number of contest? :"))
+          (dir-name nil))
+  (evil-window-vsplit)
+  (setq dir-name (concat "~/edu/python/abc" contest-num))
+  (mkdir dir-name)
+  (find-file (concat dir-name "/a.py"))
+  (next-window-any-frame)
+  (eshell)
+  (next-window-any-frame)
+
+    )))

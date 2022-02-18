@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: input_n
+# key: nnn
+# condition: t
+# --
+
+n = list(map(int,input().split()))

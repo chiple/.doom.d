@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: forr
+# uuid:
+# key: forr
+# condition: t
+# --
+
+for(int i=0; i<n; i++){}

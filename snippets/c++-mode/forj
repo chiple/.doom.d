@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: forj
+# uuid:
+# key: forj
+# --
+for(int j=0; j<k; j++){
+
+}

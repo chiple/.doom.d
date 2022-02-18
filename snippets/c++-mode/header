@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: header
+# key: head
+# --
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int main(){
+
+}

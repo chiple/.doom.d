@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: gcd
+# uuid:
+# key: gcd
+# condition: t
+# --
+int gcd(int a, int b) {
+    return b ? gcd(b, a%b) : a;
+}

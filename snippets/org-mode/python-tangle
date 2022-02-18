@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: python-tangle
+# key: pytan
+# --
+* codes
+:PROPERTIES:
+:header-args:python: :tangle yayay.py
+:END:

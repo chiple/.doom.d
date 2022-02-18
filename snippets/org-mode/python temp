@@ -3,6 +3,6 @@
 # key: pyyy
 # --
 
-#+begin_src python :results output
+#+begin_src python :results output :tangle
 
 #+end_src
