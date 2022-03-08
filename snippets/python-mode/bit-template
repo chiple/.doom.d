@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: bit-template
+# uuid:
+# key: bitty
+# --
+ bit = [i>>j&1 for j in range(n)]

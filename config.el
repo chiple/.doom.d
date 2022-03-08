@@ -38,6 +38,13 @@
       "g n" #'elgantt-open)
 
 (map! :leader
+      :desc "counsel capture"
+      "c p" #'counsel-org-capture)
+(map! :leader
+      :desc "counsel capture"
+      "y c" #'org-code-capture--store-here)
+
+(map! :leader
       :desc "右下がアジェンダ、左下がシェルです。"
       "l 1" #'split-screen-1)
 
@@ -58,6 +65,11 @@
       :desc "ace-window"
       "a c" #'ace-window)
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+
+(map! :leader
+      :desc "imenu-list"
+      "t l" #'imenu-list-smart-toggle)
+;;visual line of numbers ではない
 
 (map! :leader
       :desc "snippets-find"
@@ -101,16 +113,36 @@
       "f j"#'ranger)
 
 (map! :leader
+      :desc "ranger"
+      "v a"#'ankki)
+
+(map! :leader
       :desc "man page"
       "d c"#'man)
 
 (map! :leader
       :desc "run sly"
       "a a" #'sly)
+(use-package clippy)
+(map! :leader
+      :desc "clippy-describe-variable"
+      "v v" #'clippy-describe-variable)
+
+(map! :leader
+      :desc "clippy-describe-function"
+      "v f" #'clippy-describe-function)
 
 (map! :leader
       :desc  "hydra gd"
       "g d"#'gdscript-hydra-show)
+
+(custom-set-faces!
+  '(doom-dashboard-banner :foreground "red"  :weight bold)
+  '(doom-dashboard-footer :inherit font-lock-constant-face)
+  '(doom-dashboard-footer-icon :inherit all-the-icons-red)
+  '(doom-dashboard-loaded :inherit font-lock-warning-face)
+  '(doom-dashboard-menu-desc :inherit font-lock-string-face)
+  '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
 
 (use-package doom-themes
     :custom
@@ -178,8 +210,8 @@
 (with-eval-after-load 'org-journal
 (when (string-equal system-type "darwin")
 
-  (setq org-agenda-files '("~/MEGA/MEGAsync/org"
-                           "~/org/todo.org"
+  (setq org-agenda-files '("~/org/todo.org"
+                           "~/org/hackemacs.oeg"
                            )))
 
 )
@@ -277,6 +309,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("fi" . "src fish"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
@@ -297,6 +330,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(haskell. t)
  '(C++ . t)
  '(dot . t)
+ '(javascript . t)
 
 
  )
@@ -344,6 +378,27 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          org-roam-ui-open-on-start t))
 
 (setq org-roam-dailies-directory "/Users/yamamotoryuuji/roam/journal")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq org-roam-dialies-capture-template                                    ;;
+;;       '(("d" "default" entry "* %<%I:%H%p>: %?"                            ;;
+;;         :if-new (file+head "%S<%Y-%m-%d>.org" "#+title: %<%Y-%m%d>\n?")))) ;;
+;;;;;;;;;;;f;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq org-roam-dailies-capture-templates
+      '(("d" "Journal" entry "* %<%H: %M>\n"
+         :if-new (file+head+olp "%<%Y-%m-%d>.org"
+  	  	        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
+		  	        ("Journal")))
+        ("b" "books" entry "* books"
+         :if-new (file+head+olp "%<%Y-%m-%d>.org"
+  	  	        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
+		  	        ("Journal")))
+
+
+        ("m" "Most Important Thing" entry "* TODO %? :mit:"
+         :if-new (file+head+olp "%<%Y-%m-%d>.org"
+			        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
+			        ("Most Important Thing(s)")))))
 
 (use-package! elgantt)
 
@@ -379,6 +434,57 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       elgantt-startup-folded nil
       elgantt-show-header-depth t
       elgantt-draw-overarching-headers t)
+
+(defconst ladicle/org-journal-dir "~/roam/journal/")
+(defconst ladicle/org-journal-file-format (concat ladicle/org-journal-dir "%Y%m%d.org"))
+
+(defvar org-code-capture--store-file "")
+(defvar org-code-capture--store-header "")
+
+;; This function is used in combination with a coding template of org-capture.
+(defun org-code-capture--store-here ()
+  "Register current subtree as a capture point."
+  (interactive)
+  (setq org-code-capture--store-file (buffer-file-name))
+  (setq org-code-capture--store-header (nth 4 (org-heading-components))))
+
+;; This function is used with a capture-template for (function) type.
+;; Look for headline that registered at `org-code-capture--store-header`.
+;; If the matching subtree is not found, create a new Capture tree.
+(defun org-code-capture--find-store-point ()
+  "Find registered capture point and move the cursor to it."
+  (let ((filename (if (string= "" org-code-capture--store-file)
+                      (format-time-string ladicle/org-journal-file-format)
+                    org-code-capture--store-file)))
+    (set-buffer (org-capture-target-buffer filename)))
+  (goto-char (point-min))
+  (unless (derived-mode-p 'org-mode)
+    (error
+     "Target buffer \"%s\" for org-code-capture--find-store-file should be in Org mode"
+     (current-buffer))
+    (current-buffer))
+  (if (re-search-forward org-code-capture--store-header nil t)
+      (goto-char (point-at-bol))
+    (goto-char (point-max))
+    (or (bolp) (insert "\n"))
+    (insert "* Capture\n")
+    (beginning-of-line 0))
+  (org-end-of-subtree))
+
+;; Capture templates for code-reading
+(add-to-list 'org-capture-templates
+      '("u" "code-link"
+         plain
+         (function org-code-capture--find-store-point)
+         "% {Summary}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote--get-remote-url))\n# %a"
+         :immediate-finish t))
+
+(add-to-list 'org-capture-templates
+        '("p" "just-code-link"
+         plain
+         (function org-code-capture--find-store-point)
+         "%a"
+         :immediate-finish t))
 
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
@@ -447,4 +553,45 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (eshell)
   (next-window-any-frame)
 
+  
     )))
+
+  (use-package ace-window
+   :custom-face
+    (aw-leading-char-face ((t (:height 4.0 :foreground "#f1fa8c")))))
+
+(defun append-string-to-file (s filename)
+  (with-temp-buffer
+    (insert s)
+    (insert "\n")
+    (write-region (point-min) (point-max) filename t)))
+
+(defun ankki ()
+  (interactive)
+  (progn
+    (let ((word (read-string "🐕Type in the word you don't know🐕: ")))
+      (append-string-to-file word "~/Documents/words.txt")
+      )
+    (async-shell-command "python3 ~/.doom.d/asdf.py")
+    )
+  )
+
+(use-package ivy-posframe
+      :config
+    (ivy-posframe-mode 1))
+(setq ivy-posframe-parameters
+      '((left-fringe . 10)
+        (right-fringe . 10)))
+
+(use-package beacon
+  :custom
+     (beacon-color "white")
+    :config
+    (beacon-mode 1)
+    )
+
+(with-eval-after-load 'org
+  (require 'edraw-org)
+  (edraw-org-setup-default))
+
+(require 'pos-tip)

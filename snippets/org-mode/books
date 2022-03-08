@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: books
+# uuid:
+# key: books
+# condition: t
+# --
+* Books
+** shellgei
+** linux
+** pointer
+** mylisp
+** on lisp
+** effective python

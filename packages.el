@@ -39,6 +39,32 @@
 (package! ace-window
   :recipe (:host github :repo "abo-abo/ace-window"))
 
+(package! lsp-ui
+  :recipe (:host github :repo "emacs-lsp/lsp-ui"))
+
+
+(package! imenu-list
+  :recipe (:host github :repo "bmag/imenu-list"))
+
+(package! graphviz-dot-mode
+  :recipe (:host github :repo "ppareit/graphviz-dot-mode"))
+
+(package! clippy
+  :recipe (:host github :repo "emacsmirror/clippy.el"))
+
+(package!  ivy-posframe
+  :recipe (:host github :repo "tumashu/ivy-posframe"))
+(package!  beacon
+  :recipe (:host github :repo "Malabarba/beacon"))
+
+(package! el-easydraw
+  :recipe (:host github :repo "misohena/el-easydraw"))
+
+(package! pos-tip
+  :recipe (:host github :repo "tjarvstrand/pos-tip"))
+
+
+
 
 (unpin! org-roam company-org-roam)
 (package! org-roam-ui)

@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: wedrivermanager(headless)
+# key: webdrivermanager
+# condition: t
+# --
+
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.add_argument('--headless')
+
+driver = Chrome(ChromeDriverManager().install(),chrome_options=options)
