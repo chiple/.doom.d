@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: ketasu
+# uuid:
+# key: ketasu
+# condition: t
+# --
+def count_digit(value):
+    return sum(c.isdigit() for c in str(value))

@@ -161,7 +161,6 @@ be real personal programming career for me at last!
 (map! :leader
       :desc "run sly"
       "a a" #'sly)
-(use-package clippy)
 (map! :leader
       :desc "clippy-describe-variable"
       "v v" #'clippy-describe-variable)
@@ -469,7 +468,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 *** org-roam-ui
 
 #+begin_src emacs-lisp
-(setq org-roam-directory "/Users/yamamotoryuuji/roam")
+(setq org-roam-directory "/Users/yamamotoryuuji/Dropbox/roam")
 (use-package org-roam-bibtex
   :after org-roam
   :config
@@ -494,7 +493,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+END_SRC
 *** org-roam-dialies
 #+begin_src emacs-lisp
-(setq org-roam-dailies-directory "/Users/yamamotoryuuji/roam/journal")
+(setq org-roam-dailies-directory "/Users/yamamotoryuuji/Dropbox/roam/journal")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (setq org-roam-dialies-capture-template                                    ;;
 ;;       '(("d" "default" entry "* %<%I:%H%p>: %?"                            ;;
@@ -611,10 +610,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+end_src
 
 * PREFERENCE
-
 #+begin_src emacs-lisp
 (defun my-pretty-lambda ()
-  (setq prettify-symbols-alist '(("lambda" . 955))))
+  (setq prettify-symbols-alist '(("lambda" . 955)
+                                 )))
+
 (add-hook 'python-mode-hook 'my-pretty-lambda)
 (add-hook 'python-mode-hook 'prettify-symbols-mode)
 (add-hook 'org-mode-hook 'my-pretty-lambda)
@@ -691,7 +691,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
    :custom-face
     (aw-leading-char-face ((t (:height 4.0 :foreground "#f1fa8c")))))
 #+end_src
-* anki
+* tools
+** vocacb
 #+begin_src emacs-lisp
 (defun append-string-to-file (s filename)
   (with-temp-buffer
@@ -709,6 +710,111 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     )
   )
 
+
+#+end_src
+** TODO 矢印
+キーマップはとりま設計書
+- ├ からの分岐を考える
+  下に伸ばしたいのがほとんどのはず？？
+  作成した時点で上に追加しておく？
+- 折り曲げた時に釣り合いが取れるかどうか。
+  現在ある矢印のつながりを探索して、オブジェクト（クラスでも、構造体でもいいから）
+  を作成して、そこから、おる。
+
+*** keymap
+|           | key       | func name               | shape   |
+|-----------+-----------+-------------------------+---------|
+| create    | SPC a j k | arrow down right        | └─>     |
+|           | SPC a j h | arrow down left         | <─┘     |
+| manuplate |           |                         |         |
+|           |           |                         |         |
+|           |           |                         |         |
+|           | SPC a p v | arrow path vertically   | ┘ or └  |
+|           |           |                         | ┤<─┸─>├ |
+|           |           |                         |         |
+|           | SPC a p h | arrow path horizontally | ┘ or └  |
+|           |           |                         | └─>  ┴  |
+|           |           |                         |         |
+
+#+begin_src emacs-lisp
+
+(defun yajirushi-add ()
+  (interactive)
+  (let ((length (cl-parse-integer(read-string "put the arrow length here: " "3") :radix 10))
+        (result ""))
+    (cl-do ((num 1 (1+ num)))
+        ((> num length))
+      (if (equal num length)
+          (setq result (concat result "└─>"))
+          (setq result (concat result "├─>\n")))
+      )
+    (with-current-buffer
+        (insert result)
+      (number-to-string (line-number-at-pos))
+        )
+  ))
+(defun yajirushi-new-line ()
+  (interactive)
+  (cl-case (char-after)
+    ((?│)
+     (evil-yank (point) (point))
+     (forward-line -1)
+     (evil-paste-after)
+     )))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun adjust-box-shape () ;;
+;;   (interactive))           ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun yajirushi-rotate ()
+  (interactive)
+  (cl-case (char-after)
+        ;;
+        ((?└)
+         (delete-forward-char 1)
+         (insert "├"))
+        ((?├)
+         (delete-forward-char 1)
+         (insert "┌"))
+        ((?┌)
+         (delete-forward-char 1)
+         (insert "└"))
+        ;;横から
+        ((?─)
+         (delete-forward-char 1)
+         (insert "┬"))
+         ((?┬)
+         (delete-forward-char 1)
+         (insert "─"))
+        ))
+
+(defun yajirushi-expand ()
+  (interactive)
+    (cl-case (char-after)
+        ((?─)
+         (insert "─"))
+        ))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun box-display () ;;
+;;   (interactive)       ;;
+;;)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+(map! :leader
+      :desc "個数を指定して矢印をつくる"
+      "a j l" #'yajirushi-add)
+
+(map! :leader
+      :desc "文字の種類に応じて変換"
+      "a r" #'yajirushi-rotate)
+
+(map! :leader
+      :desc "文字の種類に応じて変換"
+      "a x" #'yajirushi-expand)
 
 #+end_src
 * ivy
@@ -737,5 +843,4 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+end_src
 * clippy
 #+begin_src emacs-lisp
-(require 'pos-tip)
 #+end_src

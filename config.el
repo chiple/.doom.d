@@ -123,7 +123,6 @@
 (map! :leader
       :desc "run sly"
       "a a" #'sly)
-(use-package clippy)
 (map! :leader
       :desc "clippy-describe-variable"
       "v v" #'clippy-describe-variable)
@@ -356,7 +355,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          :unnarrowed t)
         )))
 
-(setq org-roam-directory "/Users/yamamotoryuuji/roam")
+(setq org-roam-directory "/Users/yamamotoryuuji/Dropbox/roam")
 (use-package org-roam-bibtex
   :after org-roam
   :config
@@ -377,7 +376,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           org-roam-ui-update-on-save t
          org-roam-ui-open-on-start t))
 
-(setq org-roam-dailies-directory "/Users/yamamotoryuuji/roam/journal")
+(setq org-roam-dailies-directory "/Users/yamamotoryuuji/Dropbox/roam/journal")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (setq org-roam-dialies-capture-template                                    ;;
 ;;       '(("d" "default" entry "* %<%I:%H%p>: %?"                            ;;
@@ -487,7 +486,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          :immediate-finish t))
 
 (defun my-pretty-lambda ()
-  (setq prettify-symbols-alist '(("lambda" . 955))))
+  (setq prettify-symbols-alist '(("lambda" . 955)
+                                 )))
+
 (add-hook 'python-mode-hook 'my-pretty-lambda)
 (add-hook 'python-mode-hook 'prettify-symbols-mode)
 (add-hook 'org-mode-hook 'my-pretty-lambda)
@@ -576,6 +577,84 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     )
   )
 
+(defun yajirushi-add ()
+  (interactive)
+  (let ((length (cl-parse-integer(read-string "put the arrow length here: " "3") :radix 10))
+        (result ""))
+    (cl-do ((num 1 (1+ num)))
+        ((> num length))
+      (if (equal num length)
+          (setq result (concat result "└─>"))
+          (setq result (concat result "├─>\n")))
+      )
+    (with-current-buffer
+        (insert result)
+      (number-to-string (line-number-at-pos))
+        )
+  ))
+(defun yajirushi-new-line ()
+  (interactive)
+  (cl-case (char-after)
+    ((?│)
+     (evil-yank (point) (point))
+     (forward-line -1)
+     (evil-paste-after)
+     )))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun adjust-box-shape () ;;
+;;   (interactive))           ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun yajirushi-rotate ()
+  (interactive)
+  (cl-case (char-after)
+        ;;
+        ((?└)
+         (delete-forward-char 1)
+         (insert "├"))
+        ((?├)
+         (delete-forward-char 1)
+         (insert "┌"))
+        ((?┌)
+         (delete-forward-char 1)
+         (insert "└"))
+        ;;横から
+        ((?─)
+         (delete-forward-char 1)
+         (insert "┬"))
+         ((?┬)
+         (delete-forward-char 1)
+         (insert "─"))
+        ))
+
+(defun yajirushi-expand ()
+  (interactive)
+    (cl-case (char-after)
+        ((?─)
+         (insert "─"))
+        ))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun box-display () ;;
+;;   (interactive)       ;;
+;;)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+(map! :leader
+      :desc "個数を指定して矢印をつくる"
+      "a j l" #'yajirushi-add)
+
+(map! :leader
+      :desc "文字の種類に応じて変換"
+      "a r" #'yajirushi-rotate)
+
+(map! :leader
+      :desc "文字の種類に応じて変換"
+      "a x" #'yajirushi-expand)
+
 (use-package ivy-posframe
       :config
     (ivy-posframe-mode 1))
@@ -594,4 +673,4 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (require 'edraw-org)
   (edraw-org-setup-default))
 
-(require 'pos-tip)
+

@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: box
+# uuid:
+# key: box
+# condition: t
+# --
+┌───────────────────┐
+│  what's this      │
+└───┯───────────────┘

@@ -49,9 +49,7 @@
 (package! graphviz-dot-mode
   :recipe (:host github :repo "ppareit/graphviz-dot-mode"))
 
-(package! clippy
-  :recipe (:host github :repo "emacsmirror/clippy.el"))
-
+(package! clippy)
 (package!  ivy-posframe
   :recipe (:host github :repo "tumashu/ivy-posframe"))
 (package!  beacon

@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: rec-image
+# uuid:
+# key: rec
+# condition: t
+# --
+ ┝>| struct(tree) |─┐
+ │ |--------------| │
+ │ |     char     |<┤
+ │ |--------------| │
+ │ |     int      |<┤
+ │ |--------------| │
+ └─|     tree     |<┤
