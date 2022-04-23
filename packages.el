@@ -61,6 +61,12 @@
 (package! pos-tip
   :recipe (:host github :repo "tjarvstrand/pos-tip"))
 
+(package! glsl-mode
+  :recipe (:host github :repo "jimhourihan/glsl-mode"))
+
+(package! oj
+  :recipe (:host github :repo "conao3/oj.el"))
+
 
 
 

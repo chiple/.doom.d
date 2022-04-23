@@ -132,8 +132,20 @@
       "v f" #'clippy-describe-function)
 
 (map! :leader
+      :desc "clippy-describe-function"
+      "q n" #'sp-forward-sexp)
+
+(map! :leader
+      :desc "clippy-describe-function"
+      "q b" #'sp-barkward-sexp)
+
+(map! :leader
       :desc  "hydra gd"
       "g d"#'gdscript-hydra-show)
+
+(map! :leader
+      :desc "latex-preview"
+      "l p"#'org-latex-preview)
 
 (custom-set-faces!
   '(doom-dashboard-banner :foreground "red"  :weight bold)
@@ -154,7 +166,12 @@
     (doom-themes-neotree-config )
     (doom-themes-org-config))
 
-(setq gdscript-godot-executable "/Users/yamamotoryuuji/desktop/Godot.app/contents/MacOS/Godot")
+(use-package! glsl-mode)
+(add-to-list 'auto-mode-alist '("\\.gdshader\\'" . glsl-mode))
+
+(setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
+
+(setq gdscript-godot-executable "/Users/yamamotoryuuji/Desktop/Godot.app/Contents/MacOS/Godot")
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
@@ -308,6 +325,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("fi" . "src fish"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
 (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
 
 (defun efs/org-babel-tangle-config ()
@@ -330,8 +348,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(C++ . t)
  '(dot . t)
  '(javascript . t)
-
-
+ '(plantuml. t)
  )
 
 (after! org-roam
@@ -485,6 +502,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          "%a"
          :immediate-finish t))
 
+(setq org-src-fontify-natively t)
+
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955)
                                  )))
@@ -585,54 +604,155 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         ((> num length))
       (if (equal num length)
           (setq result (concat result "└─>"))
-          (setq result (concat result "├─>\n")))
-      )
+        (setq result (concat result "├─>\n"))))
     (with-current-buffer
         (insert result)
-      (number-to-string (line-number-at-pos))
-        )
-  ))
+      (number-to-string (line-number-at-pos)))
+    ))
+;;横に伸びるやつ
 (defun yajirushi-new-line ()
   (interactive)
   (cl-case (char-after)
     ((?│)
-     (evil-yank (point) (point))
      (forward-line -1)
-     (evil-paste-after)
-     )))
+     (let ((line-content (thing-at-point 'line t)))
+       (insert line-content)))
+    ((?├)
+
+     (forward-line 1)
+     (let ((line-content (thing-at-point 'line t)))
+       (insert "\n")
+       (forward-line -1)
+       (insert "│")
+       ))
+
+    ((?┬)
+     (let ((line-content (thing-at-point 'line t))
+           (end (point)))
+       (beginning-of-line)
+       (let* ((start (point))
+              (offset (- end start)))
+         (forward-line 1)
+         (insert line-content)
+         (forward-line -1)
+         (cl-do ((num 0 (1+ num)))
+             ((> num offset))
+           (cl-case (char-after)
+             ((?├)
+              (delete-forward-char 1)
+              (insert "│")
+              (forward-char -1)
+              )
+             ((?┬)
+              (delete-forward-char 1)
+              (insert "└")
+              (forward-char -1)
+              )
+             ((?─)
+              (delete-forward-char 1)
+              (insert " ")
+              (forward-char -1)
+              )
+             ((?└)
+              (delete-forward-char 1)
+              (insert " ")
+              (forward-char -1)
+              )
+             )
+
+           (forward-char 1)
+           )
+         )))))
+;;現在位置のXを保持したまま上へいく。
+(defun yajirushi-go-upward ()
+  (let ((end (point)))
+    (beginning-of-line)
+    (let* ((start (point))
+           (offset (- end start))
+           )
+      (forward-line -1)
+      (goto-char (+ offset (point)))
+      )
+    ))
+;;もしかしたら、ぶつかるところがふえるかもしれない
+(defun yajirushi-go-left ()
+  (interactive)
+  (while (not (equal (thing-at-point 'char t) "└"))
+    (forward-char -1)))
+
+(defun yajirushi-go-right ()
+  (interactive)
+  (while (not (equal (thing-at-point 'char t) "┘"))
+    (forward-char 1)))
+;;左までいって、上(yajirushi-go-upward)まで探索したら、そのポイントを保存する
+;;右までいったら、そのポイントを保存する。
+;;一つの辺に複数のHubがあったら、エラーを出す。
+(defun detect-box ()
+  (interactive)
+  (let ((start) (top-left) (bottom-right))
+    (setq start (point))
+  (cl-case (char-after)
+    ((?┯)
+     (yajirushi-go-left)
+     (while (not (equal (thing-at-point 'char t) "┌"))
+       (yajirushi-go-upward))
+     (setq top-left (point))
+     (goto-char start)
+     (yajirushi-go-right)
+     (setq bottom-right (point))
+     ))
+  (print top-left)
+  (print bottom-right)
+  )
+)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (defun adjust-box-shape () ;;
 ;;   (interactive))           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;文字の長さを調べるー＞その分上のやつを作る。
+;;入力した文字の両端に縦の罫線をつける
+(defun moji-tree ()
+  (interactive)
+  (let ((word (cl-parse-integer(read-string "put string here: " ))
+        (result ""))
+        (with-current-buffer
+        (insert result)
+      (number-to-string (line-number-at-pos)))
+    )
+                        ))
+
 (defun yajirushi-rotate ()
   (interactive)
   (cl-case (char-after)
-        ;;
-        ((?└)
-         (delete-forward-char 1)
-         (insert "├"))
-        ((?├)
-         (delete-forward-char 1)
-         (insert "┌"))
-        ((?┌)
-         (delete-forward-char 1)
-         (insert "└"))
-        ;;横から
-        ((?─)
-         (delete-forward-char 1)
-         (insert "┬"))
-         ((?┬)
-         (delete-forward-char 1)
-         (insert "─"))
-        ))
+    ;;
+    ((?└)
+     (delete-forward-char 1)
+     (insert "├"))
+    ((?├)
+     (delete-forward-char 1)
+     (insert "┌"))
+    ((?┌)
+     (delete-forward-char 1)
+     (insert "└"))
+    ;;横から
+    ((?─)
+     (delete-forward-char 1)
+     (insert "┬")
+     (forward-char -1)
+     )
+
+    ((?┬)
+     (delete-forward-char 1)
+     (insert "─"))
+    ))
 
 (defun yajirushi-expand ()
   (interactive)
-    (cl-case (char-after)
-        ((?─)
-         (insert "─"))
-        ))
+  (cl-case (char-after)
+    ((?─)
+     (insert "─"))
+    ))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -654,6 +774,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (map! :leader
       :desc "文字の種類に応じて変換"
       "a x" #'yajirushi-expand)
+(map! :leader
+      :desc "文字の種類に応じて変換"
+      "a o" #'yajirushi-new-line)
 
 (use-package ivy-posframe
       :config
@@ -674,3 +797,5 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (edraw-org-setup-default))
 
 
+
+(use-package ob)

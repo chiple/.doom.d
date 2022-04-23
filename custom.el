@@ -10,6 +10,8 @@
    '("234dbb732ef054b109a9e5ee5b499632c63cc24f7c2383a849815dacc1727cb6" default))
  '(exwm-floating-border-color "#191b20")
  '(fci-rule-color "#5B6268")
+ '(gdscript-godot-executable
+   "/Users/yamamotoryuuji/Desktop/Godot.app/Contents/MacOS/Godot")
  '(highlight-tail-colors
    ((("#333a38" "#99bb66" "green")
      . 0)
@@ -50,6 +52,12 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(aw-leading-char-face ((t (:height 4.0 :foreground "#f1fa8c"))))
+ '(doom-dashboard-banner ((t (:foreground "red" :weight bold))))
+ '(doom-dashboard-footer ((t (:inherit font-lock-constant-face))))
+ '(doom-dashboard-footer-icon ((t (:inherit all-the-icons-red))))
+ '(doom-dashboard-loaded ((t (:inherit font-lock-warning-face))))
+ '(doom-dashboard-menu-desc ((t (:inherit font-lock-string-face))))
+ '(doom-dashboard-menu-title ((t (:inherit font-lock-function-name-face))))
  '(doom-modeline-bar ((t (:background "#6272a4"))))
  '(org-pomodoro-mode-line ((t (:foreground "#ff5555"))))
  '(org-pomodoro-mode-line-break ((t (:foreground "#50fa7b")))))

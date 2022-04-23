@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sushiki
+# uuid:
+# key: sushi
+# condition: t
+# --
+\[\]
