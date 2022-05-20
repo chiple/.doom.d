@@ -1,11 +1,9 @@
 #+TITLE: Config
 #+property: header-args:emacs-lisp :tangle "./config.el"
 
-* Insight
-This literal programmming style might be standard for me. I want to make a org file that
-would leave snippets that worth left to make my own lisp library using asdf. That would
-be real personal programming career for me at last!
-
+* この Config について
+org-tangle という機能で、emacs の config を
+.org ファイルで書いています。まだあまり説明が書かれていません。
 * Bookmarks
 #+BEGIN_SRC emacs-lisp
 (map! :leader
@@ -130,13 +128,14 @@ be real personal programming career for me at last!
   (transpose-lines 1)
   (forward-line -1)
   (indent-according-to-mode))
-(global-set-key  (kbd "C-j") 'move-line-down)
-(global-set-key (kbd "C-k")  'move-line-up)
 
-;;クリップボードにPwd
 (map! :leader
-      :desc "evil-pwd"
-      "p w"#'+evil:pwd)
+      :desc "line-swap-down"
+      "l d"#'move-line-down)
+(map! :leader
+      :desc "line-swap-down"
+      "l u"#'move-line-up)
+
 #+end_src
 ** file
 #+begin_src emacs-lisp
@@ -156,6 +155,7 @@ be real personal programming career for me at last!
       "d c"#'man)
 
 #+end_src
+
 ** lisp
 #+begin_src emacs-lisp
 (map! :leader
@@ -170,14 +170,20 @@ be real personal programming career for me at last!
       "v f" #'clippy-describe-function)
 
 (map! :leader
-      :desc "clippy-describe-function"
-      "q n" #'sp-forward-sexp)
+      :desc "sexp-forward"
+      "s x f" #'sp-forward-sexp)
 
 (map! :leader
-      :desc "clippy-describe-function"
-      "q b" #'sp-barkward-sexp)
+      :desc "sexp-backward"
+      "s x b" #'sp-backward-sexp)
 
+(map! :leader
+      :desc "sexp-kill"
+      "s x d" #'sp-kill-sexp)
 
+(map! :leader
+      :desc "sexp-kill"
+      "s x s" #'+default/search-other-project)
 
 #+end_src
 
@@ -249,6 +255,11 @@ be real personal programming career for me at last!
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 #+end_src
+** shell
+#+begin_src emacs-lisp
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+#+end_src
 * CLISP
 *** SLY
 #+BEGIN_SRC emacs-lisp
@@ -267,6 +278,7 @@ be real personal programming career for me at last!
 #+end_src
 
 * Org
+
 ** habit
 #+begin_src emacs-lisp
 (require 'org-habit)
@@ -300,6 +312,7 @@ be real personal programming career for me at last!
 
 #+end_src
 ** Agenda
+
 #+begin_src emacs-lisp
 (setq org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-if-done t
@@ -311,14 +324,13 @@ be real personal programming career for me at last!
 (when (string-equal system-type "darwin")
 
   (setq org-agenda-files '("~/org/todo.org"
-                           "~/org/hackemacs.oeg"
+                           "~/org/elisptodo.org"
                            )))
 
 )
 (when (string-equal system-type "gnu/linux")
 
   (setq org-agenda-files '("~/org")))
-
 
 (setq org-agenda-clockreport-parameter-plist
       (quote (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
@@ -367,23 +379,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                    (org-habit-show-habits t))))))
 
                      #+end_src
-** org-download
-#+begin_src emacs-lisp
-(use-package! org-download
-  :after org
-  :config
-  (setq-default org-download-image-dir "./images/"
-                ;; org-download-screenshot-method "flameshot gui --raw > %s"
-                org-download-delete-image-after-download t
-                org-download-method 'directory
-                org-download-heading-lvl 1
-                org-download-screenshot-file "/tmp/screenshot.png"
-                )
-  (cond (IS-LINUX (setq-default org-download-screenshot-method "xclip -selection clipboard -t image/png -o > %s"))
-        (IS-MAC (setq-default org-download-screenshot-method "screencapture -i %s")))
-  )
-#+end_src
-
 ** Pomodoro
 #+BEGIN_SRC emacs-lisp
 (use-package org-pomodoro
@@ -439,6 +434,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ***** TODO Automatically tangle our Emacs.org config file when we save it
 #+begin_src emacs-lisp
 
+
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
                       (expand-file-name "home/ryu/.doom.d/config.org"))
@@ -491,6 +487,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         )))
 
 
+#+end_src
+*** dir-option
+#+begin_src emacs-lisp
+(defun inuru ()
+  (interactive)
+  (let ((select '((me . roam) (share . loggg))))
+    (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
+    :require-match t
+    :action (lambda (choice)
+              (setq org-roam-directory (concat "/Users/yamamotoryuuji/Dropbox/"
+                                               (symbol-name (cdr choice)))))))
+  (org-roam-db-sync))
 #+end_src
 
 *** org-roam-ui
@@ -641,6 +649,30 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq org-src-fontify-natively t)
 #+end_src
 
+** visual
+** org-benrify
+これは、Org で使う便利な機能で、もしかしたら、車輪の再発明をしているのかもしれない
+Snippet がおいてあるところ。
+#+begin_src emacs-lisp
+(defun list-headings()
+  (interactive)
+(defun get-existing-heading-in-buffer ()
+  (save-excursion
+  (goto-char (point-min))
+  (let ((head '()))
+    (while (re-search-forward "*" (point-max) t)
+      (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
+      )
+    head)))
+
+(ivy-read "headings" (get-existing-heading-in-buffer)
+          :action (lambda (x) (goto-char (cadr x))))
+)
+(map! :leader
+      :desc "heading list of current buffer"
+      "l h" #'list-headings)
+#+end_src
+
 * PREFERENCE
 #+begin_src emacs-lisp
 (defun my-pretty-lambda ()
@@ -716,7 +748,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (eshell)
   (next-window-any-frame)
 
-  
+
     )))
 
   (use-package ace-window
@@ -754,20 +786,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   を作成して、そこから、おる。
 
 *** keymap
+
+|-----------+-----------+-------------------------+---------|
 |           | key       | func name               | shape   |
 |-----------+-----------+-------------------------+---------|
 | create    | SPC a j k | arrow down right        | └─>     |
 |           | SPC a j h | arrow down left         | <─┘     |
-| manuplate |           |                         |         |
-|           |           |                         |         |
-|           |           |                         |         |
-|           | SPC a p v | arrow path vertically   | ┘ or └  |
+|-----------+-----------+-------------------------+---------|
+| manuplate | SPC a p v | arrow path vertically   | ┘ or └  |
 |           |           |                         | ┤<─┸─>├ |
 |           |           |                         |         |
 |           | SPC a p h | arrow path horizontally | ┘ or └  |
-|           |           |                         | └─>  ┴  |
-|           |           |                         |         |
-
+|-----------+-----------+-------------------------+---------|
 #+begin_src emacs-lisp
 
 (defun yajirushi-add ()
@@ -982,7 +1012,90 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+begin_src emacs-lisp
 #+end_src
 
+* leave node name to journal
+#+begin_src emacs-lisp
+(defun get-today-file ()
+  (let ((file-name (org-journal--get-entry-path))
+        year month date)
+    (string-match "[0-9]+" file-name)
+    (setq file-name (match-string 0 file-name))
+    (setq year (substring file-name 0 4))
+    (setq month (substring file-name 4 6))
+    (setq date (substring file-name 6 8))
+    (format "%s-%s-%s.org" year month date)))
+
+(add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
+
+(defun get-node-name (str)
+  (string-match "-.*" str)
+  (print (match-string 0 str))
+)
+
+(defun write-to (buffer)
+  (with-current-buffer
+      (let ((new-node (buffer-name)))
+        (set-buffer buffer)
+        (goto-char (point-max))
+        (insert (format "[[%s][%s]]" (concat org-roam-directory "/" new-node) (get-node-name new-node)))
+        (print (current-buffer)))))
+#+end_src
+
 * others
 #+begin_src emacs-lisp
+
 (use-package ob)
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+
+(setq dashboard-startup-banner "~/graph/transparent.png")
+(add-to-list 'custom-theme-load-path "./.doom.d/themes/yamamotoryuuji-theme.el")
+(setq cutom-theme-directory "~/.doom.d/themes")
 #+end_src
+
+** competitive
+(oj-test)が動かぬので、これを追加
+#+begin_src emacs-lisp
+(defun pyt-test ()
+  (interactive)
+(oj--exec-script "oj t -c \"python3 main.py\""))
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "o j p t" #'pyt-test)
+
+(defun pyt-submit()
+  (interactive)
+(oj--exec-script "oj submit main.py"))
+
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "o j p s" #'pyt-submit)
+#+end_src
+* cursor move
+** "" の中身を消してくれるやつ
+この辺はもうちょいうまくできそう
+#+begin_src emacs-lisp
+(defun go-and-delete-in-double-quote ()
+  (interactive)
+  (re-search-forward "\"" (line-end-position) t)
+  (set-mark (point))
+  (re-search-forward "\"" (line-end-position) t)
+  (kill-region (mark) (1- (point)))
+  )
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "d l w" #'go-and-delete-in-double-quote)
+#+end_src
+** ) まで行ってくれるやつ
+#+begin_src emacs-lisp
+(defun goto-end-of-parenthesis ()
+  (interactive)
+  (set-mark (point))
+  (re-search-forward ")" (line-end-position) t)
+  (kill-region (mark) (1- (point))))
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "d l )" #'goto-end-of-parenthesis)
+#+end_src
+

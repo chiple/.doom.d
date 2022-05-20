@@ -67,8 +67,34 @@
 (package! oj
   :recipe (:host github :repo "conao3/oj.el"))
 
+(package! cargo
+  :recipe (:host github :repo "kwrooijen/cargo.el"))
 
+(package! exec-path-from-shell
+  :recipe (:host github :repo "purcell/exec-path-from-shell"))
 
+(package! emacs-dashboard
+  :recipe (:host github :repo "emacs-dashboard/emacs-dashboard"))
+(package! nyan-mode
+  :recipe (:host github :repo "TeMPOraL/nyan-mode"))
+
+(package! org-graph-view
+  :recipe (:host github :repo "alphapapa/org-graph-view"))
+
+(package! org-pretty-table
+  :recipe (:host github :repo "Fuco1/org-pretty-table"))
+
+(package! org-mind-map
+  :recipe (:host github :repo "the-ted/org-mind-map"))
+
+(package! org-modern
+  :recipe (:host github :repo "minad/org-modern"))
+
+(package! modus-themes
+  :recipe (:host github :repo "protesilaos/modus-themes"))
+
+(package! emacs-application-framework
+  :recipe (:host github :repo "emacs-eaf/emacs-application-framework"))
 
 (unpin! org-roam company-org-roam)
 (package! org-roam-ui)

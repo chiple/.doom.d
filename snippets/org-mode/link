@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: link
+# uuid:
+# key: lll
+# condition: t
+# --
+[[`%`$0][]]

@@ -100,13 +100,13 @@
   (transpose-lines 1)
   (forward-line -1)
   (indent-according-to-mode))
-(global-set-key  (kbd "C-j") 'move-line-down)
-(global-set-key (kbd "C-k")  'move-line-up)
 
-;;クリップボードにPwd
 (map! :leader
-      :desc "evil-pwd"
-      "p w"#'+evil:pwd)
+      :desc "line-swap-down"
+      "l d"#'move-line-down)
+(map! :leader
+      :desc "line-swap-down"
+      "l u"#'move-line-up)
 
 (map! :leader
       :desc "ranger"
@@ -132,12 +132,20 @@
       "v f" #'clippy-describe-function)
 
 (map! :leader
-      :desc "clippy-describe-function"
-      "q n" #'sp-forward-sexp)
+      :desc "sexp-forward"
+      "s x f" #'sp-forward-sexp)
 
 (map! :leader
-      :desc "clippy-describe-function"
-      "q b" #'sp-barkward-sexp)
+      :desc "sexp-backward"
+      "s x b" #'sp-backward-sexp)
+
+(map! :leader
+      :desc "sexp-kill"
+      "s x d" #'sp-kill-sexp)
+
+(map! :leader
+      :desc "sexp-kill"
+      "s x s" #'+default/search-other-project)
 
 (map! :leader
       :desc  "hydra gd"
@@ -186,6 +194,9 @@
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+
 (use-package sly)
 
 (use-package! coconut-mode)
@@ -227,14 +238,13 @@
 (when (string-equal system-type "darwin")
 
   (setq org-agenda-files '("~/org/todo.org"
-                           "~/org/hackemacs.oeg"
+                           "~/org/elisptodo.org"
                            )))
 
 )
 (when (string-equal system-type "gnu/linux")
 
   (setq org-agenda-files '("~/org")))
-
 
 (setq org-agenda-clockreport-parameter-plist
       (quote (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
@@ -273,20 +283,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         ("w" "🐩🐩🐕🐩🐩"
          ((alltodo ""
                    (org-habit-show-habits t))))))
-
-(use-package! org-download
-  :after org
-  :config
-  (setq-default org-download-image-dir "./images/"
-                ;; org-download-screenshot-method "flameshot gui --raw > %s"
-                org-download-delete-image-after-download t
-                org-download-method 'directory
-                org-download-heading-lvl 1
-                org-download-screenshot-file "/tmp/screenshot.png"
-                )
-  (cond (IS-LINUX (setq-default org-download-screenshot-method "xclip -selection clipboard -t image/png -o > %s"))
-        (IS-MAC (setq-default org-download-screenshot-method "screencapture -i %s")))
-  )
 
 (use-package org-pomodoro
     :after org-agenda
@@ -371,6 +367,16 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
          :unnarrowed t)
         )))
+
+(defun inuru ()
+  (interactive)
+  (let ((select '((me . roam) (share . loggg))))
+    (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
+    :require-match t
+    :action (lambda (choice)
+              (setq org-roam-directory (concat "/Users/yamamotoryuuji/Dropbox/"
+                                               (symbol-name (cdr choice)))))))
+  (org-roam-db-sync))
 
 (setq org-roam-directory "/Users/yamamotoryuuji/Dropbox/roam")
 (use-package org-roam-bibtex
@@ -504,6 +510,24 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (setq org-src-fontify-natively t)
 
+(defun list-headings()
+  (interactive)
+(defun get-existing-heading-in-buffer ()
+  (save-excursion
+  (goto-char (point-min))
+  (let ((head '()))
+    (while (re-search-forward "*" (point-max) t)
+      (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
+      )
+    head)))
+
+(ivy-read "headings" (get-existing-heading-in-buffer)
+          :action (lambda (x) (goto-char (cadr x))))
+)
+(map! :leader
+      :desc "heading list of current buffer"
+      "l h" #'list-headings)
+
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955)
                                  )))
@@ -573,7 +597,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (eshell)
   (next-window-any-frame)
 
-  
+
     )))
 
   (use-package ace-window
@@ -798,4 +822,72 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 
 
+(defun get-today-file ()
+  (let ((file-name (org-journal--get-entry-path))
+        year month date)
+    (string-match "[0-9]+" file-name)
+    (setq file-name (match-string 0 file-name))
+    (setq year (substring file-name 0 4))
+    (setq month (substring file-name 4 6))
+    (setq date (substring file-name 6 8))
+    (format "%s-%s-%s.org" year month date)))
+
+(add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
+
+(defun get-node-name (str)
+  (string-match "-.*" str)
+  (print (match-string 0 str))
+)
+
+(defun write-to (buffer)
+  (with-current-buffer
+      (let ((new-node (buffer-name)))
+        (set-buffer buffer)
+        (goto-char (point-max))
+        (insert (format "[[%s][%s]]" (concat org-roam-directory "/" new-node) (get-node-name new-node)))
+        (print (current-buffer)))))
+
 (use-package ob)
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+
+(setq dashboard-startup-banner "~/graph/transparent.png")
+(add-to-list 'custom-theme-load-path "./.doom.d/themes/yamamotoryuuji-theme.el")
+(setq cutom-theme-directory "~/.doom.d/themes")
+
+(defun pyt-test ()
+  (interactive)
+(oj--exec-script "oj t -c \"python3 main.py\""))
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "o j p t" #'pyt-test)
+
+(defun pyt-submit()
+  (interactive)
+(oj--exec-script "oj submit main.py"))
+
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "o j p s" #'pyt-submit)
+
+(defun go-and-delete-in-double-quote ()
+  (interactive)
+  (re-search-forward "\"" (line-end-position) t)
+  (set-mark (point))
+  (re-search-forward "\"" (line-end-position) t)
+  (kill-region (mark) (1- (point)))
+  )
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "d l w" #'go-and-delete-in-double-quote)
+
+(defun goto-end-of-parenthesis ()
+  (interactive)
+  (set-mark (point))
+  (re-search-forward ")" (line-end-position) t)
+  (kill-region (mark) (1- (point))))
+(map! :leader
+      :desc "delete-content-of-double-quote"
+      "d l )" #'goto-end-of-parenthesis)
