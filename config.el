@@ -508,7 +508,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          "%a"
          :immediate-finish t))
 
-(setq org-src-fontify-natively t)
+(add-hook 'org-mode-hook #'org-modern-mode)
+
+(setq easy-hugo-basedir "~/chiple.github.io/")
+(doom! :lang
+       (org +hugo))
+(use-package ox-hugo
+  :ensure t
+  :after ox)
+(setq easy-hugo-url "https://chiple.github.io")
+(setq easy-hugo-sshdomain "https://chiple.github.io")
+(setq easy-hugo-root "/")
+(setq easy-hugo-previewtime "300")
+(setq easy-hugo-postdir "content/post")
+(setq org-hugo-base-dir "~/chiple.github.io/")
 
 (defun list-headings()
   (interactive)
@@ -516,7 +529,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (save-excursion
   (goto-char (point-min))
   (let ((head '()))
-    (while (re-search-forward "*" (point-max) t)
+    (while (re-search-forward "^*" (point-max) t)
       (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
       )
     head)))
@@ -822,7 +835,28 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 
 
+(defun extract-link-name (link-content)
+  (let ((brace link-content))
+    (string-match "\\]\\[\\(.*\\)\\]\\]" brace)
+    (match-string 1 brace)))
+
+;;(extract-link-name "[[hazure][asdf]]")
+(defun get-exsting-link-name ()
+  (save-excursion
+    (goto-char (point-min))
+    (let ((rect-bracketed '()))
+      (while (re-search-forward "^\\[" (point-max) t)
+        (add-to-list 'rect-bracketed
+                     (extract-link-name (thing-at-point 'line t))))
+      rect-bracketed)))
+
+(defun linkp (name)
+  (if (member name (get-exsting-link-name))
+      t
+    nil))
+
 (defun get-today-file ()
+  ;;get the file name of current date
   (let ((file-name (org-journal--get-entry-path))
         year month date)
     (string-match "[0-9]+" file-name)
@@ -832,19 +866,46 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (setq date (substring file-name 6 8))
     (format "%s-%s-%s.org" year month date)))
 
+(defun visited-nodep (buffer)
+  "This argument is just for the org journal of today.
+TODO This can be generic.
+if nil, just put the tag bottom of the org file
+else, just put the link to the * visited node"
+  (set-buffer buffer)
+  (save-excursion
+    (let ((nodes '()))
+      (goto-char (point-min))
+      (while (re-search-forward "^*" (point-max) t)
+        (add-to-list 'nodes (replace-regexp-in-string "\n" "" (thing-at-point 'line t))))
+      (if (member "* visited" nodes)
+          t
+        nil)
+      )))
+
+
 (add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
+(add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
 
 (defun get-node-name (str)
   (string-match "-.*" str)
-  (print (match-string 0 str))
-)
+  (print (substring (match-string 0 str) 1 (length (match-string 0 str))))
+  )
 
 (defun write-to (buffer)
   (with-current-buffer
       (let ((new-node (buffer-name)))
         (set-buffer buffer)
         (goto-char (point-max))
-        (insert (format "[[%s][%s]]" (concat org-roam-directory "/" new-node) (get-node-name new-node)))
+    ;;This can be more short, joining the unless into one statement.
+    ;;But this is easy to read and write.
+        (unless (visited-nodep buffer)
+          (save-excursion
+            (goto-char (point-max))
+            (insert "* visited")))
+        (unless (linkp (get-node-name new-node))
+          (save-excursion
+            (re-search-forward "* visited" (point-max) t)
+            (insert (format "\n[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)))))
         (print (current-buffer)))))
 
 (use-package ob)

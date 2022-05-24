@@ -93,8 +93,13 @@
 (package! modus-themes
   :recipe (:host github :repo "protesilaos/modus-themes"))
 
-(package! emacs-application-framework
-  :recipe (:host github :repo "emacs-eaf/emacs-application-framework"))
+(package! ox-hugo
+  :recipe (:host github :repo "kaushalmodi/ox-hugo"))
+
+(package! emacs-easy-hugo
+  :recipe (:host github :repo "masasam/emacs-easy-hugo"))
+
+
 
 (unpin! org-roam company-org-roam)
 (package! org-roam-ui)
