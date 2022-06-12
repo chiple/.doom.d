@@ -1,0 +1,111 @@
+# -*- mode: snippet -*-
+# name: temp
+# uuid:
+# key: tmpl
+# condition: t
+# --
+template <typename T> T modpow(T x, T y, T M) {
+  if (y == 0)
+    return 1;
+  else if (y % 2 == 0)
+    return modpow(x, y / 2, M) * modpow(x, y / 2, M) % M;
+  else
+    return modpow(x, y - 1, M) * x % M;
+}
+
+template <typename T> T gcd(T a, T b) {
+  if (a % b == 0)
+    return b;
+  else
+    return gcd(b, a % b);
+}
+
+bool compare_by_s(pair<int, int> a, pair<int, int> b) {
+  return a.second < b.second;
+}
+
+bool compare_by_f(pair<int, int> a, pair<int, int> b) {
+  return a.first < b.first;
+}
+
+bool rcompare_by_s(pair<int, int> a, pair<int, int> b) {
+  return a.second > b.second;
+}
+
+bool rcompare_by_f(pair<int, int> a, pair<int, int> b) {
+  return a.first > b.first;
+}
+
+bool compare_vec(vector<int> &a, vector<int> &b) { return a[0] < b[0]; }
+
+template <typename T>
+bool next_combination(const T first, const T last, int k) {
+  const T subset = first + k;
+  // empty container | k = 0 | k == n
+  if (first == last || first == subset || last == subset) {
+    return false;
+  }
+  T src = subset;
+  while (first != src) {
+    src--;
+    if (*src < *(last - 1)) {
+      T dest = subset;
+      while (*src >= *dest) {
+        dest++;
+      }
+      iter_swap(src, dest);
+      rotate(src + 1, dest + 1, last);
+      rotate(subset, subset + (last - dest) - 1, last);
+      return true;
+    }
+  }
+  // restore
+  rotate(first, subset, last);
+  return false;
+}
+
+template <typename T> bool is_prime(const T V) {
+  rep(i, 2, sqrt((double)V) + 1) {
+    if (V % i == 0)
+      return false;
+  }
+  return true;
+}
+
+map<long, int> make_primes(long N) {
+  map<long, int> primes;
+  rep(i, 0, sqrt((double)N) + 1) {
+    if (N % i == 0) {
+      primes[i] = 0;
+      while (N % i == 0) {
+        primes[i]++;
+        N /= i;
+      }
+    }
+  }
+  if (N > 1) {
+    primes[N] = 1;
+  }
+  return primes;
+}
+template <typename T> void printmat(vector<vector<T>> mat) {
+  for (int i = 0; i < mat.size(); ++i) {
+    for (int j = 0; j < mat[i].size(); ++j) {
+      cout << mat[i][j] << " ";
+    }
+    cout << endl;
+  }
+}
+template <typename T> void printvec(vector<T> vec) {
+  rep(i, 0, vec.size()) cout << vec[i] << " ";
+  cout << endl;
+}
+
+bool is_ok(string S) {
+  int cnt = 0;
+  rep(i, 0, S.size()) {
+    if (S[i] == '.')
+      cnt++;
+  }
+  return (cnt <= 2);
+}

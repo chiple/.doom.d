@@ -94,3 +94,4 @@
 (put 'upcase-region 'disabled nil)
 (put 'customize-themes 'disabled nil)
 (put 'customize-face 'disabled nil)
+(put 'scroll-left 'disabled nil)

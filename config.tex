@@ -1,7 +1,51 @@
+% Created 2022-06-07 Tue 21:14
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{山本龍二}
+\date{\today}
+\title{Config}
+\hypersetup{
+ pdfauthor={山本龍二},
+ pdftitle={Config},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 27.2 (Org mode 9.6)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\section{この Config について}
+\label{sec:org25204b7}
+org-tangle という機能で、emacs の config を
+.org ファイルで書いています。まだあまり説明が書かれていません。
+\section{Bookmarks}
+\label{sec:org5dd7b7e}
+\begin{verbatim}
 (map! :leader
       (:prefix ("b". "buffer")
        :desc "List bookmarks" "L" #'list-bookmarks
        :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
+\end{verbatim}
+
+\section{key-bindings}
+\label{sec:orgb14201c}
+\subsection{org}
+\label{sec:org0fd931e}
+\begin{verbatim}
 
 ;;not classified
 (map! (:leader
@@ -17,6 +61,11 @@
        :desc "org-slide-start" "o s s" #'org-tree-slide-mode
        :desc "org-slide-right" "o s l" #'org-tree-slide-move-next-tree)))
 
+\end{verbatim}
+
+\subsection{screen}
+\label{sec:orgc15097b}
+\begin{verbatim}
 ;;layout
 (map! (:leader
        (:desc "右下がアジェンダ、左下がシェルです。" "l 1" #'split-screen-1
@@ -32,12 +81,18 @@
       :desc "imenu-list"
       "t l" #'imenu-list-smart-toggle)
 ;;visual line of numbers ではない
-
+\end{verbatim}
+\subsection{snippet}
+\label{sec:orgf1a9610}
+\begin{verbatim}
 (map! (:leader
       (:desc "snippets-find" "s n o" #'+snippets/find
       :desc "snippets-insert" "s n i" #'+snippets/new
       :desc "snippets-edit" "s n e" #'+snippets/edit)))
-
+\end{verbatim}
+\subsection{text-edit}
+\label{sec:org7ff8cbe}
+\begin{verbatim}
 (map! :leader
       :desc "heml kill ring"
       "k r" #'helm-show-kill-ring)
@@ -60,11 +115,18 @@
 (map! (:leader
       (:desc "line-swap-down" "l d"#'move-line-down
        :desc "line-swap-down" "l u"#'move-line-up)))
-
+\end{verbatim}
+\subsection{operating somethign}
+\label{sec:org8a90b4e}
+\begin{verbatim}
 (map! :leader
       :desc "man page"
       "d c"#'man)
+\end{verbatim}
 
+\subsection{lisp}
+\label{sec:orgc92d6fb}
+\begin{verbatim}
 (map! :leader :desc "run sly" "a a" #'sly)
 
 (map! (:leader
@@ -72,15 +134,44 @@
         :desc "sexp-backward" "s x b" #'sp-backward-sexp
         :desc "sexp-kill" "s x d" #'sp-kill-sexp
         :desc "sexp-kill" "s x s" #'+default/search-other-project)))
+\end{verbatim}
 
+\subsection{godot}
+\label{sec:orge3d9137}
+\begin{verbatim}
 (map! :leader
       :desc  "hydra gd"
       "g d"#'gdscript-hydra-show)
 
+\end{verbatim}
+
+\subsection{latex}
+\label{sec:orgf4676ae}
+\begin{verbatim}
 (map! :leader
       :desc "latex-preview"
       "l p"#'org-latex-preview)
+(setq org-export-latex-coding-system 'shift_jis)
+(setq org-export-latex-date-format "%Y-%m-%d")
+(setq org-export-latex-classes nil)
+(add-to-list 'org-export-latex-classes
+  '("jsarticle"
+    "\\documentclass[a4j]{jsarticle}"
+    ("\\section{%s}" . "\\section*{%s}")
+    ("\\subsection{%s}" . "\\subsection*{%s}")
+    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+))
+(setq org-export-latex-packages-alist
+  '(("AUTO" "inputenc"  t)
+    ("T1"   "fontenc"   t)
+    ))
 
+\end{verbatim}
+\section{dashboard}
+\label{sec:orgd852e35}
+\begin{verbatim}
 (custom-set-faces!
   '(doom-dashboard-banner :foreground "red"  :weight bold)
   '(doom-dashboard-footer :inherit font-lock-constant-face)
@@ -88,14 +179,31 @@
   '(doom-dashboard-loaded :inherit font-lock-warning-face)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
+\end{verbatim}
+\section{Theme}
+\label{sec:org14465a9}
+\begin{verbatim}
 
 (modus-themes-load-vivendi)
-
+\end{verbatim}
+\section{Langs and Dev}
+\label{sec:orgd8b0e1c}
+\subsection{glsl-mode}
+\label{sec:org9bf7bf0}
+\begin{verbatim}
 (use-package! glsl-mode)
 (add-to-list 'auto-mode-alist '("\\.gdshader\\'" . glsl-mode))
-
+\end{verbatim}
+\subsection{plantuml}
+\label{sec:org209d5b9}
+\begin{verbatim}
 (setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
-
+\end{verbatim}
+\subsection{LSP}
+\label{sec:org62d3128}
+\subsubsection{gdscript-mode}
+\label{sec:orga30f463}
+\begin{verbatim}
 (setq gdscript-docs-local-path "/Users/yamamotoryuuji/Documents/docs/")
 (setq gdscript-godot-executable "/Users/yamamotoryuuji/Desktop/Godot.app/Contents/MacOS/Godot")
 
@@ -111,24 +219,58 @@
     (apply original-function args)))
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
-
+\end{verbatim}
+\subsection{shell}
+\label{sec:org72c1d32}
+\begin{verbatim}
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
-
+\end{verbatim}
+\section{LISP}
+\label{sec:orge4084eb}
+\subsection{RACKET}
+\label{sec:org75e0375}
+\begin{verbatim}
 (add-hook 'racket-mode-hook
           (lambda ()
             (define-key racket-mode-map (kbd "<f5>") 'racket-run)))
 (setq racket-program "/Applications/Racket\sv8.5/bin/racket")
 
-(use-package sly)
 
+\end{verbatim}
+\subsection{CLISP}
+\label{sec:orgcfadbcf}
+\begin{enumerate}
+\item SLY
+\label{sec:org4ca0487}
+\begin{verbatim}
+(use-package sly)
+\end{verbatim}
+\end{enumerate}
+
+\subsubsection{COCONUT}
+\label{sec:org6e9a033}
+\begin{verbatim}
 (use-package! coconut-mode)
 (add-to-list 'auto-mode-alist '("\\.coco\\'" . coconut-mode))
-
+\end{verbatim}
+\subsubsection{elisp}
+\label{sec:org580bf1b}
+\begin{verbatim}
 (use-package! request)
+\end{verbatim}
 
+\section{Org}
+\label{sec:orga3dd317}
+
+\subsection{habit}
+\label{sec:org3698b82}
+\begin{verbatim}
 (require 'org-habit)
-
+\end{verbatim}
+\subsection{Directory}
+\label{sec:org9ecbe1a}
+\begin{verbatim}
 (when (string-equal system-type "darwin")
 
 (setq org-directory "~/org")
@@ -138,6 +280,10 @@
 (setq org-directory "~/org")
 )
 
+\end{verbatim}
+\subsection{Journal}
+\label{sec:orgaf26527}
+\begin{verbatim}
 (when (string-equal system-type "darwin")
 
 (setq +org-capture-journal-file "~/org" )
@@ -151,6 +297,11 @@
 (setq org-journal-date-format "%A, %d %B %Y")
 (require 'org-journal)
 
+\end{verbatim}
+\subsection{Agenda}
+\label{sec:org529cd75}
+
+\begin{verbatim}
 (setq org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-if-done t
       org-agenda-include-deadlines t
@@ -175,6 +326,13 @@
       '((1.0001 . org-warning)              ; due yesterday or before
         (0.0    . org-upcoming-deadline)))  ; due today or later
 
+\end{verbatim}
+
+
+\begin{enumerate}
+\item agenda styles
+\label{sec:org5e34d5a}
+\begin{verbatim}
 (defun air-org-skip-subtree-if-habit ()
   "Skip an agenda entry if it has a STYLE property equal to \"habit\"."
   (let ((subtree-end (save-excursion (org-end-of-subtree t))))
@@ -207,6 +365,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          ((alltodo ""
                    (org-habit-show-habits t))))))
 
+\end{verbatim}
+\end{enumerate}
+\subsection{Pomodoro}
+\label{sec:org4c85195}
+\begin{verbatim}
 (use-package org-pomodoro
     :after org-agenda
     :custom
@@ -230,13 +393,25 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     :bind (:map org-agenda-mode-map
                 ("p" . org-pomodoro)))
 
+\end{verbatim}
+
+
+\subsubsection{Startup settings}
+\label{sec:org1d8bccd}
+\begin{verbatim}
 ;;      :custom (org-bullets-bullet-list '())
 (setq org-startup-folded t)
 
 (setq
     org-superstar-headline-bullets-list '("♁" "☾" "☿" "♀" "☉" "♂" "♃" "♄")
 )
-
+\end{verbatim}
+\subsubsection{Babel}
+\label{sec:orgaeb8a4c}
+\begin{enumerate}
+\item Template
+\label{sec:org27adde5}
+\begin{verbatim}
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
@@ -246,6 +421,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
 (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+\end{verbatim}
+
+\item tangle
+\label{sec:org36f2b55}
+\begin{enumerate}
+\item {\bfseries\sffamily TODO} Automatically tangle our Emacs.org config file when we save it
+\label{sec:org2e49d61}
+\begin{verbatim}
+
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
@@ -271,6 +455,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(plantuml. t)
  )
 
+\end{verbatim}
+\end{enumerate}
+\end{enumerate}
+\subsection{org-roam}
+\label{sec:org405d58c}
+\subsubsection{org-roam-capture-template}
+\label{sec:org5a94213}
+\begin{verbatim}
 (after! org-roam
 (setq org-roam-capture-templates
       '(("d" "default" plain
@@ -292,6 +484,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          :unnarrowed t)
         )))
 
+
+\end{verbatim}
+\subsubsection{dir-option}
+\label{sec:org87cb316}
+\begin{verbatim}
 (defun inuru ()
   (interactive)
   (let ((select '((me . roam) (share . loggg))))
@@ -301,7 +498,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
               (setq org-roam-directory (concat "/Users/yamamotoryuuji/Dropbox/"
                                                (symbol-name (cdr choice)))))))
   (org-roam-db-sync))
+\end{verbatim}
 
+\subsubsection{org-roam-ui}
+\label{sec:orgc6404dc}
+
+\begin{verbatim}
 (setq org-roam-directory "/Users/yamamotoryuuji/Dropbox/roam")
 (use-package org-roam-bibtex
   :after org-roam
@@ -323,6 +525,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
           org-roam-ui-update-on-save t
          org-roam-ui-open-on-start t))
 
+
+\end{verbatim}
+\subsubsection{org-roam-dialies}
+\label{sec:org45030ed}
+\begin{verbatim}
 (setq org-roam-dailies-directory "/Users/yamamotoryuuji/Dropbox/roam/journal")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (setq org-roam-dialies-capture-template                                    ;;
@@ -346,6 +553,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 			        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
 			        ("Most Important Thing(s)")))))
 
+
+\end{verbatim}
+\subsection{elgantt}
+\label{sec:org01849af}
+\begin{verbatim}
 (use-package! elgantt)
 
 (setq elgantt-user-set-color-priority-counter 0)
@@ -380,7 +592,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       elgantt-startup-folded nil
       elgantt-show-header-depth t
       elgantt-draw-overarching-headers t)
-
+\end{verbatim}
+\subsection{reading}
+\label{sec:org652a299}
+\begin{verbatim}
 (defconst ladicle/org-journal-dir "~/roam/journal/")
 (defconst ladicle/org-journal-file-format (concat ladicle/org-journal-dir "%Y%m%d.org"))
 
@@ -439,8 +654,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
        :desc "counsel capture"
       "y c" #'org-code-capture--store-here)))
 
+\end{verbatim}
+\subsection{babel}
+\label{sec:org240fe9e}
+\begin{verbatim}
 (add-hook 'org-mode-hook #'org-modern-mode)
+\end{verbatim}
 
+
+\subsection{publish}
+\label{sec:orgb69bc40}
+\begin{verbatim}
 (setq easy-hugo-basedir "~/chiple.github.io/")
 (doom! :lang
        (org +hugo))
@@ -453,7 +677,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq easy-hugo-previewtime "300")
 (setq easy-hugo-postdir "content/post")
 (setq org-hugo-base-dir "~/chiple.github.io/")
+\end{verbatim}
 
+\subsection{org-benrify}
+\label{sec:org3ec530b}
+これは、Org で使う便利な機能で、もしかしたら、車輪の再発明をしているのかもしれない
+Snippet がおいてあるところ。
+\begin{verbatim}
 (defun list-headings()
   (interactive)
 (defun get-existing-heading-in-buffer ()
@@ -471,7 +701,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (map! :leader
       :desc "heading list of current buffer"
       "l h" #'list-headings)
+\end{verbatim}
 
+\section{PREFERENCE}
+\label{sec:orgdc3565e}
+\begin{verbatim}
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
 (add-hook 'python-mode-hook 'my-pretty-lambda)
@@ -482,13 +716,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-hook 'lisp-mode-hook 'prettify-symbols-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-pretty-lambda)
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
+\end{verbatim}
 
+\begin{verbatim}
 (defun font-set-yay ()
 (set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック")))
 
 (set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
 (add-hook 'emacs-startup-hook 'font-set-yay)
-
+\end{verbatim}
+\section{screen}
+\label{sec:org29f55e2}
+\begin{verbatim}
 (defun split-screen-1 ()
   (interactive)
   (progn
@@ -545,7 +784,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (use-package ace-window
    :custom-face
     (aw-leading-char-face ((t (:height 4.0 :foreground "#f1fa8c")))))
-
+\end{verbatim}
+\section{tools}
+\label{sec:orgabdd0b2}
+\subsection{vocacb}
+\label{sec:org2a4b879}
+\begin{verbatim}
 (defun append-string-to-file (s filename)
   (with-temp-buffer
     (insert s)
@@ -561,6 +805,40 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (async-shell-command "python3 ~/.doom.d/asdf.py")
     )
   )
+
+
+\end{verbatim}
+\subsection{{\bfseries\sffamily TODO} 矢印}
+\label{sec:org761d77f}
+キーマップはとりま設計書
+\begin{itemize}
+\item ├ からの分岐を考える
+下に伸ばしたいのがほとんどのはず？？
+作成した時点で上に追加しておく？
+\item 折り曲げた時に釣り合いが取れるかどうか。
+現在ある矢印のつながりを探索して、オブジェクト（クラスでも、構造体でもいいから）
+を作成して、そこから、おる。
+\end{itemize}
+
+\subsubsection{keymap}
+\label{sec:org7a0d2f8}
+
+\begin{center}
+\begin{tabular}{llll}
+\hline
+ & key & func name & shape\\
+\hline
+create & SPC a j k & arrow down right & └─>\\
+ & SPC a j h & arrow down left & <─┘\\
+\hline
+manuplate & SPC a p v & arrow path vertically & ┘ or └\\
+ &  &  & ┤<─┸─>├\\
+ &  &  & \\
+ & SPC a p h & arrow path horizontally & ┘ or └\\
+\hline
+\end{tabular}
+\end{center}
+\begin{verbatim}
 
 (defun yajirushi-add ()
   (interactive)
@@ -730,25 +1008,37 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       :desc "文字の種類に応じて回転" "a r" #'yajirushi-rotate
       :desc "文字の種類に応じてのばす" "a x" #'yajirushi-expand
       :desc "文字の種類に応じて改行" "a o" #'yajirushi-new-line)))
-
+\end{verbatim}
+\section{ivy}
+\label{sec:org3f25cba}
+\begin{verbatim}
 (use-package ivy-posframe
       :config
     (ivy-posframe-mode 1))
 (setq ivy-posframe-parameters
       '((left-fringe . 10)
         (right-fringe . 10)))
-
+\end{verbatim}
+\section{beacon}
+\label{sec:org350a73a}
+\begin{verbatim}
 (use-package beacon
   :custom
      (beacon-color "white")
     :config
     (beacon-mode 1)
     )
-
+\end{verbatim}
+\section{easy-draw}
+\label{sec:orgf6dc90b}
+\begin{verbatim}
 (with-eval-after-load 'org
   (require 'edraw-org)
   (edraw-org-setup-default))
-
+\end{verbatim}
+\section{workspace}
+\label{sec:org8fdbe91}
+\begin{verbatim}
 (defun open-this-buffer-in-workspece ()
   (interactive)
   (let ((where-i-was (current-buffer)))
@@ -758,6 +1048,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (map! (:leader
        (:desc "to-workspace" "w z"#'open-this-buffer-in-workspece
         :desc "to-workspace" "w d"#'+workspace/delete)))
+\end{verbatim}
+
+\section{leave node name to journal}
+\label{sec:orgda97097}
+\begin{verbatim}
 
 (defun extract-link-name (link-content)
   (let ((brace link-content))
@@ -839,6 +1134,12 @@ else, just put the link to the * visited node"
 (add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
 (add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
 
+\end{verbatim}
+
+\section{others}
+\label{sec:orgafd5b1a}
+\begin{verbatim}
+
 (use-package ob)
 (use-package dashboard
   :ensure t
@@ -848,7 +1149,12 @@ else, just put the link to the * visited node"
 (setq dashboard-startup-banner "~/graph/transparent.png")
 (add-to-list 'custom-theme-load-path "./.doom.d/themes/yamamotoryuuji-theme.el")
 (setq cutom-theme-directory "~/.doom.d/themes")
+\end{verbatim}
 
+\subsection{competitive}
+\label{sec:orgfd00296}
+(oj-test)が動かぬので、これを追加
+\begin{verbatim}
 (defun pyt-test ()
   (interactive)
 (oj--exec-script "oj t -c \"python3 main.py\""))
@@ -859,7 +1165,13 @@ else, just put the link to the * visited node"
 (map! (:leader
       (:desc "delete-content-of-double-quote" "o j p s" #'pyt-submit
        :desc "delete-content-of-double-quote" "o j p t" #'pyt-test)))
-
+\end{verbatim}
+\section{cursor move}
+\label{sec:orgdf47412}
+\subsection{``'' の中身を消してくれるやつ}
+\label{sec:org99598d3}
+この辺はもうちょいうまくできそう
+\begin{verbatim}
 (defun go-and-delete-in-double-quote ()
   (interactive)
   (re-search-forward "\"" (line-end-position) t)
@@ -868,7 +1180,10 @@ else, just put the link to the * visited node"
 (map! :leader
       :desc "delete-content-of-double-quote"
       "d l w" #'go-and-delete-in-double-quote)
-
+\end{verbatim}
+\subsection{) まで行ってくれるやつ}
+\label{sec:org8a65fe1}
+\begin{verbatim}
 (defun goto-end-of-parenthesis ()
   (interactive)
   (set-mark (point))
@@ -877,7 +1192,10 @@ else, just put the link to the * visited node"
 (map! :leader
       :desc "delete-content-of-double-quote"
       "d l )" #'goto-end-of-parenthesis)
-
+\end{verbatim}
+\section{others}
+\label{sec:orgac36703}
+\begin{verbatim}
 (add-hook 'org-mode-hook #'org-inline-anim-mode)
 (defun inline-img-wrap ()
   (interactive)
@@ -887,7 +1205,21 @@ else, just put the link to the * visited node"
       :desc "added the prefix"
       "a n" #'inline-img-wrap)
 
+\end{verbatim}
+\section{shell}
+\label{sec:org1929c39}
+\begin{verbatim}
 ;; load environment value
 (load-file (expand-file-name "~/.emacs.d/shellenv.el"))
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
   (add-to-list 'exec-path path))
+
+;; set eshell aliases
+(setq eshell-command-aliases-list
+      (append
+       (list
+        (list "mknd" "bash ~/tools/gd_sousa/mknd.bash")
+        (list "adnd" "bash ~/tools/gd_sousa/add_node_to_scene.bash"))
+       eshell-command-aliases-list))
+\end{verbatim}
+\end{document}

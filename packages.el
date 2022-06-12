@@ -99,6 +99,11 @@
 (package! emacs-easy-hugo
   :recipe (:host github :repo "masasam/emacs-easy-hugo"))
 
+(package! nov.el
+  :recipe (:host github :repo "wasamasa/nov.el"))
+
+(package!  org-inline-anim.el
+  :recipe (:host github :repo "shg/org-inline-anim.el"))
 
 
 (unpin! org-roam company-org-roam)

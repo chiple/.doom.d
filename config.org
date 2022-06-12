@@ -18,102 +18,54 @@ org-tangle という機能で、emacs の config を
 * key-bindings
 ** org
 #+BEGIN_SRC emacs-lisp
-(map! :leader
-      :desc "tangle"
-      "o t" #'org-babel-tangle)
 
-(map! :leader
-      :desc "find-file"
-      "f f" #'find-file)
+;;not classified
+(map! (:leader
+  (:desc "org-table" "s h" #'eshell
+   :desc "zoom" "z z" #'+hydra/text-zoom/body
+   :desc "org-table" "t o" #'org-table-create
+   :desc "elgantt ""g n" #'elgantt-open
+   :desc "find-file" "f f" #'find-file)))
 
-(map! :leader
-      :desc "org-table"
-      "t o" #'org-table-create)
-
-(map! :leader
-      :desc "org-table"
-      "s h" #'eshell)
-(map! :leader
-      :desc "zoom"
-      "z z" #'+hydra/text-zoom/body)
-(map! :leader
-      :desc "org-slide-start"
-      "o s s" #'org-tree-slide-mode)
-
-(map! :leader
-      :desc "org-slide-right"
-      "o s l" #'org-tree-slide-move-next-tree)
-
-(map! :leader
-      :desc "org-quote"
-      "o q" #'tempo-template-org-quote)
-
-(map! :leader
-      :desc "org-quote"
-      "g n" #'elgantt-open)
-
-(map! :leader
-      :desc "counsel capture"
-      "c p" #'counsel-org-capture)
-(map! :leader
-      :desc "counsel capture"
-      "y c" #'org-code-capture--store-here)
+;;org slide
+(map! (:leader
+      (:desc "tangle" "o t" #'org-babel-tangle
+       :desc "org-slide-start" "o s s" #'org-tree-slide-mode
+       :desc "org-slide-right" "o s l" #'org-tree-slide-move-next-tree)))
 
 #+END_SRC
+
 ** screen
 #+begin_src emacs-lisp
+;;layout
+(map! (:leader
+       (:desc "右下がアジェンダ、左下がシェルです。" "l 1" #'split-screen-1
+        :desc "clisp用のです" "l c l" #'split-screen-3
+        :desc "contest用（ABCの）" "l c o" #'split-screen-4)))
 
-(map! :leader
-      :desc "右下がアジェンダ、左下がシェルです。"
-      "l 1" #'split-screen-1)
-
-(map! :leader
-      :desc "clisp用のです"
-      "l c l" #'split-screen-3)
-
-
-(map! :leader
-      :desc "contest用（ABCの）"
-      "l c o" #'split-screen-4)
-
-(map! :leader
-      :desc "contest用（ABCの）"
-      "l c o" #'split-screen-4)
-
-(map! :leader
-      :desc "ace-window"
-      "a c" #'ace-window)
+;;ace-window
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-
+(map! :leader
+      :desc "ace-window" "a c" #'ace-window)
+;;smart toggle
 (map! :leader
       :desc "imenu-list"
       "t l" #'imenu-list-smart-toggle)
 ;;visual line of numbers ではない
-
-
-
 #+end_src
 ** snippet
 #+begin_src emacs-lisp
-
-(map! :leader
-      :desc "snippets-find"
-      "s n o" #'+snippets/find)
-
-(map! :leader
-      :desc "snippets-insert"
-      "s n i" #'+snippets/new)
-
-(map! :leader
-      :desc "snippets-edit"
-      "s n e" #'+snippets/edit)
-
+(map! (:leader
+      (:desc "snippets-find" "s n o" #'+snippets/find
+      :desc "snippets-insert" "s n i" #'+snippets/new
+      :desc "snippets-edit" "s n e" #'+snippets/edit)))
 #+end_src
 ** text-edit
 #+begin_src emacs-lisp
 (map! :leader
       :desc "heml kill ring"
       "k r" #'helm-show-kill-ring)
+
 (defun move-line-up ()
   "Move up the current line."
   (interactive)
@@ -129,62 +81,26 @@ org-tangle という機能で、emacs の config を
   (forward-line -1)
   (indent-according-to-mode))
 
-(map! :leader
-      :desc "line-swap-down"
-      "l d"#'move-line-down)
-(map! :leader
-      :desc "line-swap-down"
-      "l u"#'move-line-up)
-
-#+end_src
-** file
-#+begin_src emacs-lisp
-(map! :leader
-      :desc "ranger"
-      "f j"#'ranger)
-
-(map! :leader
-      :desc "ranger"
-      "v a"#'ankki)
-
+(map! (:leader
+      (:desc "line-swap-down" "l d"#'move-line-down
+       :desc "line-swap-down" "l u"#'move-line-up)))
 #+end_src
 ** operating somethign
 #+begin_src emacs-lisp
 (map! :leader
       :desc "man page"
       "d c"#'man)
-
 #+end_src
 
 ** lisp
 #+begin_src emacs-lisp
-(map! :leader
-      :desc "run sly"
-      "a a" #'sly)
-(map! :leader
-      :desc "clippy-describe-variable"
-      "v v" #'clippy-describe-variable)
+(map! :leader :desc "run sly" "a a" #'sly)
 
-(map! :leader
-      :desc "clippy-describe-function"
-      "v f" #'clippy-describe-function)
-
-(map! :leader
-      :desc "sexp-forward"
-      "s x f" #'sp-forward-sexp)
-
-(map! :leader
-      :desc "sexp-backward"
-      "s x b" #'sp-backward-sexp)
-
-(map! :leader
-      :desc "sexp-kill"
-      "s x d" #'sp-kill-sexp)
-
-(map! :leader
-      :desc "sexp-kill"
-      "s x s" #'+default/search-other-project)
-
+(map! (:leader
+       (:desc "sexp-forward" "s x f" #'sp-forward-sexp
+        :desc "sexp-backward" "s x b" #'sp-backward-sexp
+        :desc "sexp-kill" "s x d" #'sp-kill-sexp
+        :desc "sexp-kill" "s x s" #'+default/search-other-project)))
 #+end_src
 
 ** godot
@@ -200,8 +116,6 @@ org-tangle という機能で、emacs の config を
 (map! :leader
       :desc "latex-preview"
       "l p"#'org-latex-preview)
-
-
 #+end_src
 * dashboard
 #+begin_src emacs-lisp
@@ -215,17 +129,8 @@ org-tangle という機能で、emacs の config を
 #+end_src
 * Theme
 #+BEGIN_SRC emacs-lisp
-(use-package doom-themes
-    :custom
-    (doom-themes-enable-italic t)
-    (doom-themes-enable-bold t)
-    :custom-face
-    (doom-modeline-bar ((t (:background "#6272a4"))))
-    :config
-    (load-theme 'doom-dracula t)
-    (doom-themes-neotree-config )
-    (doom-themes-org-config))
 
+(modus-themes-load-vivendi)
 #+END_SRC
 * Langs and Dev
 ** glsl-mode
@@ -240,6 +145,7 @@ org-tangle という機能で、emacs の config を
 ** LSP
 *** gdscript-mode
 #+begin_src emacs-lisp
+(setq gdscript-docs-local-path "/Users/yamamotoryuuji/Documents/docs/")
 (setq gdscript-godot-executable "/Users/yamamotoryuuji/Desktop/Godot.app/Contents/MacOS/Godot")
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
@@ -260,19 +166,28 @@ org-tangle という機能で、emacs の config を
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 #+end_src
-* CLISP
-*** SLY
+* LISP
+** RACKET
+#+begin_src emacs-lisp
+(add-hook 'racket-mode-hook
+          (lambda ()
+            (define-key racket-mode-map (kbd "<f5>") 'racket-run)))
+(setq racket-program "/Applications/Racket\sv8.5/bin/racket")
+
+
+#+end_src
+** CLISP
+**** SLY
 #+BEGIN_SRC emacs-lisp
 (use-package sly)
 #+END_SRC
 
-** COCONUT
+*** COCONUT
 #+begin_src emacs-lisp
 (use-package! coconut-mode)
 (add-to-list 'auto-mode-alist '("\\.coco\\'" . coconut-mode))
 #+end_src
-
-** elisp
+*** elisp
 #+begin_src emacs-lisp
 (use-package! request)
 #+end_src
@@ -423,7 +338,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
 (add-to-list 'org-structure-template-alist '("aw" . "src awk"))
-(add-to-list 'org-structure-template-alist '("fi" . "src fish"))
+(add-to-list 'org-structure-template-alist '("ba" . "src bash"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
@@ -455,6 +370,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(C++ . t)
  '(dot . t)
  '(javascript . t)
+ '(ditaa . t)
  '(plantuml. t)
  )
 
@@ -603,6 +519,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (defun org-code-capture--store-here ()
   "Register current subtree as a capture point."
   (interactive)
+  (message "the header is stored")
   (setq org-code-capture--store-file (buffer-file-name))
   (setq org-code-capture--store-header (nth 4 (org-heading-components))))
 
@@ -643,6 +560,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          (function org-code-capture--find-store-point)
          "%a"
          :immediate-finish t))
+
+;;keybinding
+(map! (:leader
+      (:desc "counsel capture" "c p" #'counsel-org-capture
+       :desc "counsel capture"
+      "y c" #'org-code-capture--store-here)))
+
 #+end_src
 ** babel
 #+begin_src emacs-lisp
@@ -695,9 +619,7 @@ Snippet がおいてあるところ。
 * PREFERENCE
 #+begin_src emacs-lisp
 (defun my-pretty-lambda ()
-  (setq prettify-symbols-alist '(("lambda" . 955)
-                                 )))
-
+  (setq prettify-symbols-alist '(("lambda" . 955))))
 (add-hook 'python-mode-hook 'my-pretty-lambda)
 (add-hook 'python-mode-hook 'prettify-symbols-mode)
 (add-hook 'org-mode-hook 'my-pretty-lambda)
@@ -964,7 +886,6 @@ Snippet がおいてあるところ。
      (insert "┬")
      (forward-char -1)
      )
-
     ((?┬)
      (delete-forward-char 1)
      (insert "─"))
@@ -974,34 +895,20 @@ Snippet がおいてあるところ。
   (interactive)
   (cl-case (char-after)
     ((?─)
-     (insert "─"))
-    ))
+     (insert "─"))))
 
+;;TODO;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (defun box-display ()     ;;
+;;   (interactive)           ;;
+;;)                          ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun box-display () ;;
-;;   (interactive)       ;;
-;;)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-(map! :leader
-      :desc "個数を指定して矢印をつくる"
-      "a j l" #'yajirushi-add)
-
-(map! :leader
-      :desc "文字の種類に応じて変換"
-      "a r" #'yajirushi-rotate)
-
-(map! :leader
-      :desc "文字の種類に応じて変換"
-      "a x" #'yajirushi-expand)
-(map! :leader
-      :desc "文字の種類に応じて変換"
-      "a o" #'yajirushi-new-line)
-
-
+;;key-bind
+(map! (:leader
+      (:desc "個数を指定して矢印をつくる" "a j l" #'yajirushi-add
+      :desc "文字の種類に応じて回転" "a r" #'yajirushi-rotate
+      :desc "文字の種類に応じてのばす" "a x" #'yajirushi-expand
+      :desc "文字の種類に応じて改行" "a o" #'yajirushi-new-line)))
 #+end_src
 * ivy
 #+begin_src emacs-lisp
@@ -1027,12 +934,25 @@ Snippet がおいてあるところ。
   (require 'edraw-org)
   (edraw-org-setup-default))
 #+end_src
-* clippy
+* workspace
 #+begin_src emacs-lisp
+(defun open-this-buffer-in-workspece ()
+  (interactive)
+  (let ((where-i-was (current-buffer)))
+    (+workspace/new)
+    (switch-to-buffer where-i-was)))
+
+(map! (:leader
+       (:desc "to-workspace" "w z"#'open-this-buffer-in-workspece
+        :desc "to-workspace" "w d"#'+workspace/delete)))
 #+end_src
+
+#+RESULTS:
+: +workspace/delete
 
 * leave node name to journal
 #+begin_src emacs-lisp
+
 (defun extract-link-name (link-content)
   (let ((brace link-content))
     (string-match "\\]\\[\\(.*\\)\\]\\]" brace)
@@ -1064,6 +984,9 @@ Snippet がおいてあるところ。
     (setq date (substring file-name 6 8))
     (format "%s-%s-%s.org" year month date)))
 
+(unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
+  (org-roam-dailies-capture-today :KEYS "d") (save-buffer))
+
 (defun visited-nodep (buffer)
   "This argument is just for the org journal of today.
 TODO This can be generic.
@@ -1081,9 +1004,6 @@ else, just put the link to the * visited node"
       )))
 
 
-(add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
-(add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
-
 (defun get-node-name (str)
   (string-match "-.*" str)
   (print (substring (match-string 0 str) 1 (length (match-string 0 str))))
@@ -1094,21 +1014,26 @@ else, just put the link to the * visited node"
       (let ((new-node (buffer-name)))
         (set-buffer buffer)
         (goto-char (point-max))
-    ;;This can be more short, joining the unless into one statement.
-    ;;But this is easy to read and write.
+        ;;This can be more short, joining the unless into one statement.
+        ;;But this is easy to read and write.
         (unless (visited-nodep buffer)
           (save-excursion
             (goto-char (point-max))
             (insert "* visited")))
+
+        (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
+          (print "no-today fie"))
+
         (unless (linkp (get-node-name new-node))
           (save-excursion
             (re-search-forward "* visited" (point-max) t)
             (insert (format "\n[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)))))
         (print (current-buffer)))))
 
+(add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
+(add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
+
 #+end_src
-#+RESULTS:
-: write-to
 
 * others
 #+begin_src emacs-lisp
@@ -1130,17 +1055,13 @@ else, just put the link to the * visited node"
 (defun pyt-test ()
   (interactive)
 (oj--exec-script "oj t -c \"python3 main.py\""))
-(map! :leader
-      :desc "delete-content-of-double-quote"
-      "o j p t" #'pyt-test)
-
 (defun pyt-submit()
   (interactive)
 (oj--exec-script "oj submit main.py"))
 
-(map! :leader
-      :desc "delete-content-of-double-quote"
-      "o j p s" #'pyt-submit)
+(map! (:leader
+      (:desc "delete-content-of-double-quote" "o j p s" #'pyt-submit
+       :desc "delete-content-of-double-quote" "o j p t" #'pyt-test)))
 #+end_src
 * cursor move
 ** "" の中身を消してくれるやつ
@@ -1148,8 +1069,6 @@ else, just put the link to the * visited node"
 #+begin_src emacs-lisp
 (defun go-and-delete-in-double-quote ()
   (interactive)
-  (re-search-forward "\"" (line-end-position) t)
-  (set-mark (point))
   (re-search-forward "\"" (line-end-position) t)
   (kill-region (mark) (1- (point)))
   )
@@ -1168,4 +1087,23 @@ else, just put the link to the * visited node"
       :desc "delete-content-of-double-quote"
       "d l )" #'goto-end-of-parenthesis)
 #+end_src
+* others
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook #'org-inline-anim-mode)
+(defun inline-img-wrap ()
+  (interactive)
+  (org-inline-anim-animate 4))
 
+(map! :leader
+      :desc "added the prefix"
+      "a n" #'inline-img-wrap)
+
+#+end_src
+* shell
+#+begin_src emacs-lisp
+;; load environment value
+(load-file (expand-file-name "~/.emacs.d/shellenv.el"))
+(dolist (path (reverse (split-string (getenv "PATH") ":")))
+  (add-to-list 'exec-path path))
+
+#+end_src
