@@ -115,6 +115,15 @@
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 
+(defun mark-and-find-definition ()
+  (interactive)
+  (evil-set-marker ?c)
+  (lsp-find-definition))
+
+(map! (:leader
+      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition
+      )))
+
 (add-hook 'racket-mode-hook
           (lambda ()
             (define-key racket-mode-map (kbd "<f5>") 'racket-run)))
@@ -246,6 +255,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
 (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
@@ -270,6 +280,19 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(ditaa . t)
  '(plantuml. t)
  )
+
+(setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
+
+(defun org-babel-execute:circler (body _)
+  (interactive)
+  "Org mode circler evaluate function"
+  (let* ((filename "teston.txt")
+         (cmd (concat org-babel-circler-excutebale " ./" filename)))
+    (unless (shell-command-to-string (concat "cat" filename))
+      (make-empty-file filename))
+    (with-temp-file filename
+      (insert body))
+      (org-babel-eval cmd body)))
 
 (after! org-roam
 (setq org-roam-capture-templates
@@ -891,3 +914,25 @@ else, just put the link to the * visited node"
 (load-file (expand-file-name "~/.emacs.d/shellenv.el"))
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
   (add-to-list 'exec-path path))
+
+(use-package dap-mode
+  :custom
+  (dap-lldb-debug-program `("/Users/yamamotoryuuji/.vscode/extensions/lanza.lldb-vscode-0.2.3/bin/darwin/bin/lldb-vscode"))
+  :config
+  (dap-mode 1)
+  (dap-tooltip-mode 1)
+  (require 'dap-lldb)
+  (use-package dap-ui
+      :ensure nil
+      :config
+      (dap-ui-mode 1)))
+
+(dap-register-debug-template
+  "LLDB::Run with lldb-vscode"
+    (list :type "lldb-vscode"
+         :cwd nil
+         :args nil
+         :request "launch"
+         :program nil))
+
+ (server-start)

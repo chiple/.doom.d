@@ -166,6 +166,23 @@ org-tangle という機能で、emacs の config を
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 #+end_src
+** key-bind
+定義のとこまでいく lsp-find-definition で、いったっきり帰ってこないのも
+なんだか不便なので、飛ぶ前の箇所を、マークしておく。
+#+begin_src emacs-lisp
+(defun mark-and-find-definition ()
+  (interactive)
+  (evil-set-marker ?c)
+  (lsp-find-definition))
+
+(map! (:leader
+      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition
+      )))
+#+end_src
+
+#+RESULTS:
+: mark-and-find-definition
+
 * LISP
 ** RACKET
 #+begin_src emacs-lisp
@@ -343,6 +360,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
 (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
 #+end_src
 
 **** tangle
@@ -378,6 +396,24 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+RESULTS:
 | (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) | er/add-org-mode-expansions | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | (lambda (&rest _) #'(lambda nil (add-hook 'after-save-hook #'org-babel-tangle :append :local))) | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | +org-enable-auto-reformat-tables-h | +org-enable-auto-update-cookies-h | +org-make-last-point-visible-h | evil-org-mode | toc-org-enable | embrace-org-mode-hook | org-eldoc-load |
+**** circler
+#+begin_src emacs-lisp
+
+(setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
+
+(defun org-babel-execute:circler (body _)
+  (interactive)
+  "Org mode circler evaluate function"
+  (let* ((filename "teston.txt")
+         (cmd (concat org-babel-circler-excutebale " ./" filename)))
+    (unless (shell-command-to-string (concat "cat" filename))
+      (make-empty-file filename))
+    (with-temp-file filename
+      (insert body))
+      (org-babel-eval cmd body)))
+
+
+#+end_src
 ** org-roam
 *** org-roam-capture-template
 #+begin_src emacs-lisp
@@ -1106,4 +1142,30 @@ else, just put the link to the * visited node"
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
   (add-to-list 'exec-path path))
 
+#+end_src
+* debugger
+#+begin_src emacs-lisp
+(use-package dap-mode
+  :custom
+  (dap-lldb-debug-program `("/Users/yamamotoryuuji/.vscode/extensions/lanza.lldb-vscode-0.2.3/bin/darwin/bin/lldb-vscode"))
+  :config
+  (dap-mode 1)
+  (dap-tooltip-mode 1)
+  (require 'dap-lldb)
+  (use-package dap-ui
+      :ensure nil
+      :config
+      (dap-ui-mode 1)))
+
+(dap-register-debug-template
+  "LLDB::Run with lldb-vscode"
+    (list :type "lldb-vscode"
+         :cwd nil
+         :args nil
+         :request "launch"
+         :program nil))
+  #+end_src
+* serv
+#+begin_src emacs-lisp
+ (server-start)
 #+end_src
