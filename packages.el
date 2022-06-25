@@ -16,6 +16,9 @@
 (package! org-roam-bibtex
   :recipe (:host github :repo "org-roam/org-roam-bibtex" :branch "orb-v0.5"))
 
+(package! biblio.el
+  :recipe (:host github :repo "cpitclaudel/biblio.el"))
+
 (package! coconut-mode
   :recipe (:host github :repo "NickSeagull/coconut-mode"))
 (package! ob-fish
