@@ -81,6 +81,18 @@
       :desc "latex-preview"
       "l p"#'org-latex-preview)
 
+(map! (:leader
+       (:desc "down on google"
+        "o g" #'(lambda ()
+                   (interactive)
+                   (w3m-search "google" (read-string "google:: "))))))
+
+(map! (:leader
+       (:desc "sexp-forward" "s x f" #'sp-forward-sexp
+        :desc "sexp-backward" "s x b" #'sp-backward-sexp
+        :desc "sexp-kill" "s x d" #'sp-kill-sexp
+        :desc "sexp-kill" "s x s" #'+default/search-other-project)))
+
 (custom-set-faces!
   '(doom-dashboard-banner :foreground "red"  :weight bold)
   '(doom-dashboard-footer :inherit font-lock-constant-face)
@@ -96,8 +108,15 @@
 
 (setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
 
+(setq lsp-auto-guess-root t)
+
 (setq gdscript-docs-local-path "/Users/yamamotoryuuji/Documents/docs/")
-(setq gdscript-godot-executable "/Users/yamamotoryuuji/Desktop/Godot.app/Contents/MacOS/Godot")
+(when (string-equal system-type "darwin")
+(setq gdscript-godot-executable "~/Desktop/Godot.app/Contents/MacOS/Godot"))
+
+(setq gdscript-godot-executable "~/Downloads/Godot_v3.5-stable_x11.64")
+
+
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
@@ -139,10 +158,7 @@
 (require 'org-habit)
 
 (when (string-equal system-type "darwin")
-
-(setq org-directory "~/org")
-
-)
+(setq org-directory "~/org"))
 (when (string-equal system-type "gnu/linux")
 (setq org-directory "~/org")
 )
@@ -239,15 +255,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     :bind (:map org-agenda-mode-map
                 ("p" . org-pomodoro)))
 
-;;      :custom (org-bullets-bullet-list '())
-(setq org-startup-folded t)
-
-(setq
-    org-superstar-headline-bullets-list '("♁" "☾" "☿" "♀" "☉" "♂" "♃" "♄")
-)
+;;(setq org-startup-folded t)
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("sh" . "src bash"))
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
 (add-to-list 'org-structure-template-alist '("aw" . "src awk"))
 (add-to-list 'org-structure-template-alist '("ba" . "src bash"))
@@ -271,7 +283,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  'org-babel-load-languages
  '(lisp . t)
  '(awk . t)
- '(fish . t)
+ '(bash . t)
  '(python . t)
  '(haskell. t)
  '(C++ . t)
@@ -321,7 +333,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
     :require-match t
     :action (lambda (choice)
-              (setq org-roam-directory (concat "/Users/yamamotoryuuji/Dropbox/"
+              (setq org-roam-directory (concat "/home/ryu/Dropbox/"
                                                (symbol-name (cdr choice)))))))
   (org-roam-db-sync))
 
@@ -331,22 +343,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ;;       '(("d" "default" entry "* %<%I:%H%p>: %?"                            ;;
 ;;         :if-new (file+head "%S<%Y-%m-%d>.org" "#+title: %<%Y-%m%d>\n?")))) ;;
 ;;;;;;;;;;;f;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(setq org-roam-dailies-capture-templates
-      '(("d" "Journal" entry "* %<%H: %M>\n"
-         :if-new (file+head+olp "%<%Y-%m-%d>.org"
-  	  	        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
-		  	        ("Journal")))
-        ("b" "books" entry "* books"
-         :if-new (file+head+olp "%<%Y-%m-%d>.org"
-  	  	        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
-		  	        ("Journal")))
-
-
-        ("m" "Most Important Thing" entry "* TODO %? :mit:"
-         :if-new (file+head+olp "%<%Y-%m-%d>.org"
-			        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
-			        ("Most Important Thing(s)")))))
 
 (use-package! elgantt)
 
@@ -443,6 +439,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (add-hook 'org-mode-hook #'org-modern-mode)
 
+(use-package org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode))
+
 (setq easy-hugo-basedir "~/chiple.github.io/")
 (doom! :lang
        (org +hugo))
@@ -484,12 +484,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-hook 'lisp-mode-hook 'prettify-symbols-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-pretty-lambda)
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
-
-(defun font-set-yay ()
-(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック")))
-
-(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
-(add-hook 'emacs-startup-hook 'font-set-yay)
 
 (defun split-screen-1 ()
   (interactive)
@@ -847,8 +841,6 @@ else, just put the link to the * visited node"
   :config
   (dashboard-setup-startup-hook))
 
-(setq dashboard-startup-banner "~/graph/transparent.png")
-(add-to-list 'custom-theme-load-path "./.doom.d/themes/yamamotoryuuji-theme.el")
 (setq cutom-theme-directory "~/.doom.d/themes")
 
 (defun pyt-test ()
@@ -890,26 +882,19 @@ else, just put the link to the * visited node"
       "a n" #'inline-img-wrap)
 
 ;; load environment value
-(load-file (expand-file-name "~/.emacs.d/shellenv.el"))
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
   (add-to-list 'exec-path path))
 
-(use-package dap-mode
-  :custom
-  (dap-lldb-debug-program `("/Users/yamamotoryuuji/.vscode/extensions/lanza.lldb-vscode-0.2.3/bin/darwin/bin/lldb-vscode"))
+(use-package! w3m
+  :commands (w3m)
   :config
-  (dap-mode 1)
-  (dap-tooltip-mode 1)
-  (require 'dap-lldb)
-  (use-package dap-ui
-      :ensure nil
-      :config
-      (dap-ui-mode 1)))
+  (setq w3m-use-tab-line nil)
+)
+(setq gdscript-docs-local-path "~/sites/godot/")
+(setq org-roam-directory "~/Dropbox/roam")
 
-(dap-register-debug-template
-  "LLDB::Run with lldb-vscode"
-    (list :type "lldb-vscode"
-         :cwd nil
-         :args nil
-         :request "launch"
-         :program nil))
+(defun message-buffer-in-other-window()
+  (interactive)
+  (org-switch-to-buffer-other-window "*Messages*"))
+(map! (:leader
+      :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))

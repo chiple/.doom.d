@@ -13,6 +13,8 @@
 ;; https://github.com/raxod502/straight.el#the-recipe-format
 ;(package! another-package
 ;  :recipe (:host github :repo "username/repo"))
+
+(package! org-roam-ui)
 (package! org-roam-bibtex
   :recipe (:host github :repo "org-roam/org-roam-bibtex" :branch "orb-v0.5"))
 
@@ -102,15 +104,21 @@
 (package! emacs-easy-hugo
   :recipe (:host github :repo "masasam/emacs-easy-hugo"))
 
+(package! org-inline-anim.el
+  :recipe (:host github :repo "shg/org-inline-anim.el"))
+
 (package! nov.el
   :recipe (:host github :repo "wasamasa/nov.el"))
 
-(package!  org-inline-anim.el
-  :recipe (:host github :repo "shg/org-inline-anim.el"))
+(package! restclient.el
+  :recipe (:host github :repo "pashky/restclient.el"))
+(package! emacs-async
+  :recipe (:host github :repo "jwiegley/emacs-async"))
 
+(package! w3m)
+(package! org-auto-tangle)
 
 (unpin! org-roam company-org-roam)
-(package! org-roam-ui)
 ;; If the package you are trying to install does not contain a PACKAGENAME.el
 ;; file, or is located in a subdirectory of the repo, you'll need to specify
 ;; `:files' in the `:recipe':
