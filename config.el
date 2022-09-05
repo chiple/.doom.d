@@ -100,8 +100,7 @@
   '(doom-dashboard-loaded :inherit font-lock-warning-face)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
-
-(modus-themes-load-vivendi)
+(set-face-attribute 'default nil :height 200)
 
 (use-package! glsl-mode)
 (add-to-list 'auto-mode-alist '("\\.gdshader\\'" . glsl-mode))
@@ -115,8 +114,6 @@
 (setq gdscript-godot-executable "~/Desktop/Godot.app/Contents/MacOS/Godot"))
 
 (setq gdscript-godot-executable "~/Downloads/Godot_v3.5-stable_x11.64")
-
-
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
@@ -140,8 +137,7 @@
   (lsp-find-definition))
 
 (map! (:leader
-      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition
-      )))
+      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition)))
 
 (add-hook 'racket-mode-hook
           (lambda ()
@@ -257,18 +253,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 ;;(setq org-startup-folded t)
 
-(require 'org-tempo)
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("sh" . "src bash"))
-(add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
-(add-to-list 'org-structure-template-alist '("aw" . "src awk"))
-(add-to-list 'org-structure-template-alist '("ba" . "src bash"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
-(add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
-(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
-(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
-
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
                       (expand-file-name "home/ryu/.doom.d/config.org"))
@@ -291,6 +275,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(javascript . t)
  '(ditaa . t)
  '(plantuml. t)
+ '(lilypond. t)
  )
 
 (setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
@@ -437,11 +422,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
        :desc "counsel capture"
       "y c" #'org-code-capture--store-here)))
 
+(use-package org-modern-indent
+  ;; :straight or :load-path here, to taste
+  :hook
+  (org-indent-mode . org-modern-indent-mode))
 (add-hook 'org-mode-hook #'org-modern-mode)
 
 (use-package org-auto-tangle
   :defer t
   :hook (org-mode . org-auto-tangle-mode))
+(setq org-modern-table nil)
+(progn
+  (add-to-list 'load-path "~/.emacs.d/site-lisp")
+  (require 'org-pretty-table)
+  (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode))))
 
 (setq easy-hugo-basedir "~/chiple.github.io/")
 (doom! :lang
@@ -473,6 +467,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (map! :leader
       :desc "heading list of current buffer"
       "l h" #'list-headings)
+
+(require 'org-tempo)
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
+(add-to-list 'org-structure-template-alist '("aw" . "src awk"))
+(add-to-list 'org-structure-template-alist '("ba" . "src bash"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
+(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
+(add-to-list 'org-structure-template-alist '("lil" . "src lilypond"))
 
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
@@ -888,8 +894,11 @@ else, just put the link to the * visited node"
 (use-package! w3m
   :commands (w3m)
   :config
-  (setq w3m-use-tab-line nil)
-)
+  (setq w3m-use-tab-line nil))
+
+(map! (:leader
+       (:desc "asdf" "w 3" #'w3m)))
+
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
 
@@ -898,3 +907,5 @@ else, just put the link to the * visited node"
   (org-switch-to-buffer-other-window "*Messages*"))
 (map! (:leader
       :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
+
+(setq doom-modeline-bar-width 2)

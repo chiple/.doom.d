@@ -92,14 +92,20 @@
 (package! org-mind-map
   :recipe (:host github :repo "the-ted/org-mind-map"))
 
-(package! org-modern
-  :recipe (:host github :repo "minad/org-modern"))
+(package! org-modern)
+
+(package! org-modern-indent
+  :recipe (:host github :repo "jdtsmith/org-modern-indent"))
+
 
 (package! modus-themes
   :recipe (:host github :repo "protesilaos/modus-themes"))
 
 (package! ox-hugo
   :recipe (:host github :repo "kaushalmodi/ox-hugo"))
+
+(package! ob-lilypond
+  :recipe (:host github :repo "mjago/ob-lilypond"))
 
 (package! emacs-easy-hugo
   :recipe (:host github :repo "masasam/emacs-easy-hugo"))

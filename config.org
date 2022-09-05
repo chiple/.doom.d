@@ -18,7 +18,6 @@ org-tangle という機能で、emacs の config を
 * key-bindings
 ** org
 #+BEGIN_SRC emacs-lisp
-
 ;;not classified
 (map! (:leader
   (:desc "org-table" "s h" #'eshell
@@ -60,6 +59,10 @@ org-tangle という機能で、emacs の config を
       :desc "snippets-insert" "s n i" #'+snippets/new
       :desc "snippets-edit" "s n e" #'+snippets/edit)))
 #+end_src
+
+#+RESULTS:
+: +snippets/edit
+
 ** text-edit
 #+begin_src emacs-lisp
 (map! :leader
@@ -145,10 +148,10 @@ org-tangle という機能で、emacs の config を
   '(doom-dashboard-loaded :inherit font-lock-warning-face)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
+(set-face-attribute 'default nil :height 200)
 #+end_src
 * Theme
-#+BEGIN_SRC emacs-lisp
-
+#+BEGIN_SRC emacs-lis p
 (modus-themes-load-vivendi)
 #+END_SRC
 * Langs and Dev
@@ -173,8 +176,6 @@ org-tangle という機能で、emacs の config を
 (setq gdscript-godot-executable "~/Desktop/Godot.app/Contents/MacOS/Godot"))
 
 (setq gdscript-godot-executable "~/Downloads/Godot_v3.5-stable_x11.64")
-
-
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
@@ -204,8 +205,7 @@ org-tangle という機能で、emacs の config を
   (lsp-find-definition))
 
 (map! (:leader
-      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition
-      )))
+      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition)))
 #+end_src
 
 #+RESULTS:
@@ -218,8 +218,6 @@ org-tangle という機能で、emacs の config を
           (lambda ()
             (define-key racket-mode-map (kbd "<f5>") 'racket-run)))
 (setq racket-program "/Applications/Racket\sv8.5/bin/racket")
-
-
 #+end_src
 ** CLISP
 **** SLY
@@ -370,25 +368,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+end_src
 *** Babel
 **** Template
-#+BEGIN_SRC emacs-lisp
-(require 'org-tempo)
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("sh" . "src bash"))
-(add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
-(add-to-list 'org-structure-template-alist '("aw" . "src awk"))
-(add-to-list 'org-structure-template-alist '("ba" . "src bash"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
-(add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
-(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
-(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
-#+end_src
-
-**** tangle
-***** TODO Automatically tangle our Emacs.org config file when we save it
-#+begin_src emacs-lisp
-
-
+#+BEGIN_SRC emacs-lisp :results silent
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
                       (expand-file-name "home/ryu/.doom.d/config.org"))
@@ -411,12 +391,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(javascript . t)
  '(ditaa . t)
  '(plantuml. t)
+ '(lilypond. t)
  )
 
 #+end_src
 
 #+RESULTS:
-| (lambda nil (add-hook 'after-save-hook #'efs/org-babel-tangle-config)) | er/add-org-mode-expansions | +lookup--init-org-mode-handlers-h | (closure (t) (&rest _) (add-hook 'before-save-hook 'org-encrypt-entries nil t)) | #[0 \301\211\207 [imenu-create-index-function org-imenu-get-tree] 2] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-show-all append local] 5] | #[0 \300\301\302\303\304$\207 [add-hook change-major-mode-hook org-babel-show-result-all append local] 5] | org-babel-result-hide-spec | org-babel-hide-all-hashes | (lambda (&rest _) #'(lambda nil (add-hook 'after-save-hook #'org-babel-tangle :append :local))) | doom-disable-show-paren-mode-h | doom-disable-show-trailing-whitespace-h | +org-enable-auto-reformat-tables-h | +org-enable-auto-update-cookies-h | +org-make-last-point-visible-h | evil-org-mode | toc-org-enable | embrace-org-mode-hook | org-eldoc-load |
+
 **** circler
 #+begin_src emacs-lisp
 
@@ -630,11 +611,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+end_src
 ** babel
 #+begin_src emacs-lisp
+(use-package org-modern-indent
+  ;; :straight or :load-path here, to taste
+  :hook
+  (org-indent-mode . org-modern-indent-mode))
 (add-hook 'org-mode-hook #'org-modern-mode)
 
 (use-package org-auto-tangle
   :defer t
   :hook (org-mode . org-auto-tangle-mode))
+(setq org-modern-table nil)
+(progn
+  (add-to-list 'load-path "~/.emacs.d/site-lisp")
+  (require 'org-pretty-table)
+  (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode))))
 #+end_src
 
 ** publish
@@ -679,6 +669,20 @@ Snippet がおいてあるところ。
       "l h" #'list-headings)
 #+end_src
 
+** tempo
+#+begin_src emacs-lisp
+(require 'org-tempo)
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
+(add-to-list 'org-structure-template-alist '("aw" . "src awk"))
+(add-to-list 'org-structure-template-alist '("ba" . "src bash"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
+(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
+(add-to-list 'org-structure-template-alist '("lil" . "src lilypond"))
+#+end_src
 * PREFERENCE
 #+begin_src emacs-lisp
 (defun my-pretty-lambda ()
@@ -1093,7 +1097,6 @@ else, just put the link to the * visited node"
 
 * others
 #+begin_src emacs-lisp
-
 (use-package ob)
 (use-package dashboard
   :ensure t
@@ -1165,12 +1168,14 @@ else, just put the link to the * visited node"
 (use-package! w3m
   :commands (w3m)
   :config
-  (setq w3m-use-tab-line nil)
-)
+  (setq w3m-use-tab-line nil))
+
+(map! (:leader
+       (:desc "just goes to w3m " "w 3" #'w3m)))
+
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
 #+end_src
-
 
 * misc
 
@@ -1180,4 +1185,5 @@ else, just put the link to the * visited node"
   (org-switch-to-buffer-other-window "*Messages*"))
 (map! (:leader
       :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
+
 #+end_src
