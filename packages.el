@@ -13,8 +13,13 @@
 ;; https://github.com/raxod502/straight.el#the-recipe-format
 ;(package! another-package
 ;  :recipe (:host github :repo "username/repo"))
+
+(package! org-roam-ui)
 (package! org-roam-bibtex
   :recipe (:host github :repo "org-roam/org-roam-bibtex" :branch "orb-v0.5"))
+
+(package! biblio.el
+  :recipe (:host github :repo "cpitclaudel/biblio.el"))
 
 (package! coconut-mode
   :recipe (:host github :repo "NickSeagull/coconut-mode"))
@@ -87,8 +92,11 @@
 (package! org-mind-map
   :recipe (:host github :repo "the-ted/org-mind-map"))
 
-(package! org-modern
-  :recipe (:host github :repo "minad/org-modern"))
+(package! org-modern)
+
+(package! org-modern-indent
+  :recipe (:host github :repo "jdtsmith/org-modern-indent"))
+
 
 (package! modus-themes
   :recipe (:host github :repo "protesilaos/modus-themes"))
@@ -96,18 +104,27 @@
 (package! ox-hugo
   :recipe (:host github :repo "kaushalmodi/ox-hugo"))
 
+(package! ob-lilypond
+  :recipe (:host github :repo "mjago/ob-lilypond"))
+
 (package! emacs-easy-hugo
   :recipe (:host github :repo "masasam/emacs-easy-hugo"))
+
+(package! org-inline-anim.el
+  :recipe (:host github :repo "shg/org-inline-anim.el"))
 
 (package! nov.el
   :recipe (:host github :repo "wasamasa/nov.el"))
 
-(package!  org-inline-anim.el
-  :recipe (:host github :repo "shg/org-inline-anim.el"))
+(package! restclient.el
+  :recipe (:host github :repo "pashky/restclient.el"))
+(package! emacs-async
+  :recipe (:host github :repo "jwiegley/emacs-async"))
 
+(package! w3m)
+(package! org-auto-tangle)
 
 (unpin! org-roam company-org-roam)
-(package! org-roam-ui)
 ;; If the package you are trying to install does not contain a PACKAGENAME.el
 ;; file, or is located in a subdirectory of the repo, you'll need to specify
 ;; `:files' in the `:recipe':

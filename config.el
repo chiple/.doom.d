@@ -81,6 +81,18 @@
       :desc "latex-preview"
       "l p"#'org-latex-preview)
 
+(map! (:leader
+       (:desc "down on google"
+        "o g" #'(lambda ()
+                   (interactive)
+                   (w3m-search "google" (read-string "google:: "))))))
+
+(map! (:leader
+       (:desc "sexp-forward" "s x f" #'sp-forward-sexp
+        :desc "sexp-backward" "s x b" #'sp-backward-sexp
+        :desc "sexp-kill" "s x d" #'sp-kill-sexp
+        :desc "sexp-kill" "s x s" #'+default/search-other-project)))
+
 (custom-set-faces!
   '(doom-dashboard-banner :foreground "red"  :weight bold)
   '(doom-dashboard-footer :inherit font-lock-constant-face)
@@ -88,16 +100,20 @@
   '(doom-dashboard-loaded :inherit font-lock-warning-face)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
-
-(modus-themes-load-vivendi)
+(set-face-attribute 'default nil :height 200)
 
 (use-package! glsl-mode)
 (add-to-list 'auto-mode-alist '("\\.gdshader\\'" . glsl-mode))
 
 (setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
 
+(setq lsp-auto-guess-root t)
+
 (setq gdscript-docs-local-path "/Users/yamamotoryuuji/Documents/docs/")
-(setq gdscript-godot-executable "/Users/yamamotoryuuji/Desktop/Godot.app/Contents/MacOS/Godot")
+(when (string-equal system-type "darwin")
+(setq gdscript-godot-executable "~/Desktop/Godot.app/Contents/MacOS/Godot"))
+
+(setq gdscript-godot-executable "~/Downloads/Godot_v3.5-stable_x11.64")
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
@@ -121,8 +137,7 @@
   (lsp-find-definition))
 
 (map! (:leader
-      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition
-      )))
+      (:desc "lsp search difinition" "l s d" #'mark-and-find-definition)))
 
 (add-hook 'racket-mode-hook
           (lambda ()
@@ -139,10 +154,7 @@
 (require 'org-habit)
 
 (when (string-equal system-type "darwin")
-
-(setq org-directory "~/org")
-
-)
+(setq org-directory "~/org"))
 (when (string-equal system-type "gnu/linux")
 (setq org-directory "~/org")
 )
@@ -239,23 +251,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     :bind (:map org-agenda-mode-map
                 ("p" . org-pomodoro)))
 
-;;      :custom (org-bullets-bullet-list '())
-(setq org-startup-folded t)
-
-(setq
-    org-superstar-headline-bullets-list '("♁" "☾" "☿" "♀" "☉" "♂" "♃" "♄")
-)
-
-(require 'org-tempo)
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
-(add-to-list 'org-structure-template-alist '("aw" . "src awk"))
-(add-to-list 'org-structure-template-alist '("ba" . "src bash"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
-(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
-(add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
-(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
-(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
+;;(setq org-startup-folded t)
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (file-name-directory (buffer-file-name))
@@ -271,7 +267,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  'org-babel-load-languages
  '(lisp . t)
  '(awk . t)
- '(fish . t)
+ '(bash . t)
  '(python . t)
  '(haskell. t)
  '(C++ . t)
@@ -279,6 +275,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(javascript . t)
  '(ditaa . t)
  '(plantuml. t)
+ '(lilypond. t)
  )
 
 (setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
@@ -321,53 +318,16 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
     :require-match t
     :action (lambda (choice)
-              (setq org-roam-directory (concat "/Users/yamamotoryuuji/Dropbox/"
+              (setq org-roam-directory (concat "/home/ryu/Dropbox/"
                                                (symbol-name (cdr choice)))))))
   (org-roam-db-sync))
 
-(setq org-roam-directory "/Users/yamamotoryuuji/Dropbox/roam")
-(use-package org-roam-bibtex
-  :after org-roam
-  :config
-  (require 'org-ref))
-
-(use-package! websocket
-    :after org-roam)
-
-(use-package! org-roam-ui
-    :after org ;; or :after org
-         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-         a hookable mode anymore, you're advised to pick something yourself
-         if you don't care about startup time, use
-    :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-         org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-         org-roam-ui-open-on-start t))
-
-(setq org-roam-dailies-directory "/Users/yamamotoryuuji/Dropbox/roam/journal")
+(setq org-roam-dailies-directory "~/Dropbox/roam/journal")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (setq org-roam-dialies-capture-template                                    ;;
 ;;       '(("d" "default" entry "* %<%I:%H%p>: %?"                            ;;
 ;;         :if-new (file+head "%S<%Y-%m-%d>.org" "#+title: %<%Y-%m%d>\n?")))) ;;
 ;;;;;;;;;;;f;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(setq org-roam-dailies-capture-templates
-      '(("d" "Journal" entry "* %<%H: %M>\n"
-         :if-new (file+head+olp "%<%Y-%m-%d>.org"
-  	  	        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
-		  	        ("Journal")))
-        ("b" "books" entry "* books"
-         :if-new (file+head+olp "%<%Y-%m-%d>.org"
-  	  	        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
-		  	        ("Journal")))
-
-
-        ("m" "Most Important Thing" entry "* TODO %? :mit:"
-         :if-new (file+head+olp "%<%Y-%m-%d>.org"
-			        "#+title: %<%Y-%m-%d>\n#+filetags: %<:%Y:%B:>\n"
-			        ("Most Important Thing(s)")))))
 
 (use-package! elgantt)
 
@@ -462,7 +422,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
        :desc "counsel capture"
       "y c" #'org-code-capture--store-here)))
 
+(use-package org-modern-indent
+  ;; :straight or :load-path here, to taste
+  :hook
+  (org-indent-mode . org-modern-indent-mode))
 (add-hook 'org-mode-hook #'org-modern-mode)
+
+(use-package org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode))
+(setq org-modern-table nil)
+(progn
+  (add-to-list 'load-path "~/.emacs.d/site-lisp")
+  (require 'org-pretty-table)
+  (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode))))
 
 (setq easy-hugo-basedir "~/chiple.github.io/")
 (doom! :lang
@@ -495,6 +468,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       :desc "heading list of current buffer"
       "l h" #'list-headings)
 
+(require 'org-tempo)
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
+(add-to-list 'org-structure-template-alist '("aw" . "src awk"))
+(add-to-list 'org-structure-template-alist '("ba" . "src bash"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
+(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+(add-to-list 'org-structure-template-alist '("circler" . "src circler"))
+(add-to-list 'org-structure-template-alist '("lil" . "src lilypond"))
+
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
 (add-hook 'python-mode-hook 'my-pretty-lambda)
@@ -505,12 +490,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-hook 'lisp-mode-hook 'prettify-symbols-mode)
 (add-hook 'emacs-lisp-mode-hook 'my-pretty-lambda)
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
-
-(defun font-set-yay ()
-(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック")))
-
-(set-fontset-font t 'japanese-jisx0208 (font-spec :family "ヒラギノ角ゴシック"))
-(add-hook 'emacs-startup-hook 'font-set-yay)
 
 (defun split-screen-1 ()
   (interactive)
@@ -868,8 +847,6 @@ else, just put the link to the * visited node"
   :config
   (dashboard-setup-startup-hook))
 
-(setq dashboard-startup-banner "~/graph/transparent.png")
-(add-to-list 'custom-theme-load-path "./.doom.d/themes/yamamotoryuuji-theme.el")
 (setq cutom-theme-directory "~/.doom.d/themes")
 
 (defun pyt-test ()
@@ -911,28 +888,24 @@ else, just put the link to the * visited node"
       "a n" #'inline-img-wrap)
 
 ;; load environment value
-(load-file (expand-file-name "~/.emacs.d/shellenv.el"))
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
   (add-to-list 'exec-path path))
 
-(use-package dap-mode
-  :custom
-  (dap-lldb-debug-program `("/Users/yamamotoryuuji/.vscode/extensions/lanza.lldb-vscode-0.2.3/bin/darwin/bin/lldb-vscode"))
+(use-package! w3m
+  :commands (w3m)
   :config
-  (dap-mode 1)
-  (dap-tooltip-mode 1)
-  (require 'dap-lldb)
-  (use-package dap-ui
-      :ensure nil
-      :config
-      (dap-ui-mode 1)))
+  (setq w3m-use-tab-line nil))
 
-(dap-register-debug-template
-  "LLDB::Run with lldb-vscode"
-    (list :type "lldb-vscode"
-         :cwd nil
-         :args nil
-         :request "launch"
-         :program nil))
+(map! (:leader
+       (:desc "asdf" "w 3" #'w3m)))
 
- (server-start)
+(setq gdscript-docs-local-path "~/sites/godot/")
+(setq org-roam-directory "~/Dropbox/roam")
+
+(defun message-buffer-in-other-window()
+  (interactive)
+  (org-switch-to-buffer-other-window "*Messages*"))
+(map! (:leader
+      :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
+
+(setq doom-modeline-bar-width 2)
