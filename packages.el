@@ -113,6 +113,9 @@
 (package! org-inline-anim.el
   :recipe (:host github :repo "shg/org-inline-anim.el"))
 
+(package! emacs-calfw
+  :recipe (:host github :repo "kiwanami/emacs-calfw"))
+
 (package! nov.el
   :recipe (:host github :repo "wasamasa/nov.el"))
 

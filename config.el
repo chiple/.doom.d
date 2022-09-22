@@ -159,14 +159,9 @@
 (setq org-directory "~/org")
 )
 
-(when (string-equal system-type "darwin")
-
-(setq +org-capture-journal-file "~/org" )
-
-)
 (when (string-equal system-type "gnu/linux")
-(setq org-journal-dir "~/MEGAsync/journal" )
-)
+  (setq org-journal-dir "~/Dropbox/roam/journal" )
+  )
 
 
 (setq org-journal-date-format "%A, %d %B %Y")
@@ -215,7 +210,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       nil)))
 
 (setq org-agenda-custom-commands
-      '(("n" "🐕🐕🐩🐕🐕"
+      '(("n" "basic"
          ((tags "PRIORITY=\"A\""
                 ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
                  (org-agenda-overriding-header "High-priority unfinished tasks:")))
@@ -224,7 +219,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                    ((org-agenda-skip-function
                      '(or (air-org-skip-subtree-if-priority ?A)
                           (org-agenda-skip-if nil '(scheduled deadline))))))))
-        ("w" "🐩🐩🐕🐩🐩"
+        ("w" "habits"
          ((alltodo ""
                    (org-habit-show-habits t))))))
 
@@ -272,10 +267,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(haskell. t)
  '(C++ . t)
  '(dot . t)
- '(javascript . t)
+ '(js . t)
  '(ditaa . t)
  '(plantuml. t)
  '(lilypond. t)
+ '(rust . t)
  )
 
 (setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
@@ -309,6 +305,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          :unnarrowed t)
         ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
          :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+         :unnarrowed t)
+        ("s" "ordinary stuff" "* aha"
+         :fi-new (file+haed "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
          :unnarrowed t)
         )))
 
@@ -470,6 +469,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("ru" . "src rust"))
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
 (add-to-list 'org-structure-template-alist '("aw" . "src awk"))
 (add-to-list 'org-structure-template-alist '("ba" . "src bash"))
@@ -479,6 +479,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("js" . "src javascript"))
 (add-to-list 'org-structure-template-alist '("circler" . "src circler"))
 (add-to-list 'org-structure-template-alist '("lil" . "src lilypond"))
+
+(add-to-list 'org-capture-templates
+        '("s" "ordinary stuff"
+         plain
+         #'(lambda () (print "para ppa"))
+         "%a"
+         :immediate-finish t))
 
 (defun my-pretty-lambda ()
   (setq prettify-symbols-alist '(("lambda" . 955))))
@@ -841,6 +848,58 @@ else, just put the link to the * visited node"
 (add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
 (add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
 
+(defun today-buffer ()
+  (let ((dirname (org-journal--get-entry-path))
+        journal-entry (ymd '((0 4) (4 6) (6 8))))
+    (string-match "journal/\\(.*\\)$" dirname)
+    (apply #'(lambda (y m d) (format "%s-%s-%s.org" y m d))
+           (cl-map 'list
+                   #'(lambda (each) (substring (match-string 1 dirname) (car each) (cadr each)))
+                   ymd))))
+
+(setq +org-capture-journal-file (concat "~/Dropbox/roam/journal/" (today-buffer)))
+
+(defun write-today (content-to-write)
+  (set-buffer (today-buffer))
+  (save-excursion
+    (goto-char (point-max))
+    (insert content-to-write)))
+
+(defun look-for-header-insert (content)
+  (set-buffer (today-buffer))
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^\\* vocab" (point-max) t)
+      (insert (concat "\n" content)))))
+
+(defun headerp (buffer heading)
+  (set-buffer buffer)
+  (save-excursion
+    (let ((nodes '()))
+      (goto-char (point-min))
+      (while (re-search-forward "^*" (point-max) t)
+        (add-to-list 'nodes (replace-regexp-in-string "\n" "" (thing-at-point 'line t))))
+      (if (member heading nodes)
+          t
+        nil)
+      )))
+
+
+(map! (:leader
+       (:desc "dict-lookup-with-journal"
+        "s t" (lambda ()
+                (interactive)
+
+                (let ((thing (doom-thing-at-point-or-region 'word)))
+                  (unless (headerp (today-buffer) "* vocab") (goto-char (point-max)) (insert "* vocab"))
+                  (+lookup/dictionary-definition thing)
+                  (look-for-header-insert thing))))))
+
+(add-to-list 'org-capture-templates
+             '("j" "Journal" entry
+               (file +org-capture-journal-file)
+               "* %?\n" :prepend t))
+
 (use-package ob)
 (use-package dashboard
   :ensure t
@@ -849,16 +908,35 @@ else, just put the link to the * visited node"
 
 (setq cutom-theme-directory "~/.doom.d/themes")
 
-(defun pyt-test ()
+(setq atco-dir "~/competi/")
+(defun atco ()
   (interactive)
-(oj--exec-script "oj t -c \"python3 main.py\""))
-(defun pyt-submit()
-  (interactive)
-(oj--exec-script "oj submit main.py"))
+  (let ((contestname))
+    (setq contestname(read-string "contest num>> "))
+    (f-mkdir-full-path (concat atco-dir contestname))
+    (shell-command (concat "cd " (concat atco-dir contestname) "&& acc new " contestname))))
 
+
+(defun test-atco ()
+  (interactive)
+  (let ((exp (cadr (split-string (buffer-file-name (current-buffer)) "\\.")) ))
+    (compile (cond
+   ((equal exp "py") "oj t -c \"python3 ./main.py\" -d ./test/")
+   ((equal exp "lisp") "oj t -c \"sbcl --script ./main.lisp\" -d ./test/")))))
+
+
+(defun submit-atco()
+  (interactive)
+  (eshell "competi")
+  (insert "acc s main.py")
+  (execute-kbd-macro (kbd "<return>"))
+  (execute-kbd-macro (kbd "<esc>")))
+
+(general-simulate-key "SPC")
 (map! (:leader
-      (:desc "delete-content-of-double-quote" "o j p s" #'pyt-submit
-       :desc "delete-content-of-double-quote" "o j p t" #'pyt-test)))
+       (:desc "prepare tests and templates" "a t n" #'atco
+        :desc "submit" "a t s" #'submit-atco
+        :desc "test" "a t t" #'test-atco)))
 
 (defun go-and-delete-in-double-quote ()
   (interactive)
@@ -897,7 +975,7 @@ else, just put the link to the * visited node"
   (setq w3m-use-tab-line nil))
 
 (map! (:leader
-       (:desc "asdf" "w 3" #'w3m)))
+       (:desc "just goes to w3m " "w 3" #'w3m)))
 
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
@@ -908,4 +986,15 @@ else, just put the link to the * visited node"
 (map! (:leader
       :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
 
-(setq doom-modeline-bar-width 2)
+(modus-themes-load-vivendi)
+
+(defun my-open-calendar ()
+  (interactive)
+  (cfw:open-calendar-buffer
+   :contents-sources
+   (list
+    (cfw:org-create-source "Green")  ; org-agenda source
+    (cfw:org-create-file-source "cal" "~/Dropbox/cal.org" "Cyan")  ; other org source
+    )))
+(map! :leader
+      :desc "calender view" "s c h" #'my-open-calendar)
