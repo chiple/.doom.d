@@ -115,6 +115,7 @@
 
 (package! emacs-calfw
   :recipe (:host github :repo "kiwanami/emacs-calfw"))
+(package! mu4e)
 
 (package! nov.el
   :recipe (:host github :repo "wasamasa/nov.el"))

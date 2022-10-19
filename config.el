@@ -93,6 +93,12 @@
         :desc "sexp-kill" "s x d" #'sp-kill-sexp
         :desc "sexp-kill" "s x s" #'+default/search-other-project)))
 
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+(setq dashboard-theme-directory (assoc-delete-all 'recents dashboard-item-generators))
+
 (custom-set-faces!
   '(doom-dashboard-banner :foreground "red"  :weight bold)
   '(doom-dashboard-footer :inherit font-lock-constant-face)
@@ -109,7 +115,6 @@
 
 (setq lsp-auto-guess-root t)
 
-(setq gdscript-docs-local-path "/Users/yamamotoryuuji/Documents/docs/")
 (when (string-equal system-type "darwin")
 (setq gdscript-godot-executable "~/Desktop/Godot.app/Contents/MacOS/Godot"))
 
@@ -150,6 +155,15 @@
 (add-to-list 'auto-mode-alist '("\\.coco\\'" . coconut-mode))
 
 (use-package! request)
+
+(defun head-add ()
+  (interactive)
+  (with-current-buffer
+      (let ((content (read-string "* ")))
+        (insert (concat "* " content "\n")))))
+
+(map! :leader
+      :desc "don't wanna write * again and again" "h h" #'head-add)
 
 (require 'org-habit)
 
@@ -435,6 +449,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (add-to-list 'load-path "~/.emacs.d/site-lisp")
   (require 'org-pretty-table)
   (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode))))
+(map! :leader
+      :desc "execute under the subtree"
+      "d o" #'org-babel-execute-subtree)
 
 (setq easy-hugo-basedir "~/chiple.github.io/")
 (doom! :lang
@@ -470,6 +487,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
 (add-to-list 'org-structure-template-alist '("ru" . "src rust"))
+(add-to-list 'org-structure-template-alist '("cc" . "src C"))
 (add-to-list 'org-structure-template-alist '("cl" . "src lisp"))
 (add-to-list 'org-structure-template-alist '("aw" . "src awk"))
 (add-to-list 'org-structure-template-alist '("ba" . "src bash"))
@@ -773,7 +791,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (string-match "\\]\\[\\(.*\\)\\]\\]" brace)
     (match-string 1 brace)))
 
-;;(extract-link-name "[[hazure][asdf]]")
 (defun get-exsting-link-name ()
   (save-excursion
     (goto-char (point-min))
@@ -837,13 +854,18 @@ else, just put the link to the * visited node"
             (insert "* visited")))
 
         (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
-          (print "no-today fie"))
+          (print "no-today file"))
 
         (unless (linkp (get-node-name new-node))
           (save-excursion
             (re-search-forward "* visited" (point-max) t)
             (insert (format "\n[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)))))
         (print (current-buffer)))))
+
+(defun add-url-to-journal ()
+  (interactive)
+  (look-for-header-insert (format "[[%s][%s]]\n" w3m-current-message (read-string "What's our title of this page?> ")) "visited"))
+
 
 (add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
 (add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
@@ -859,17 +881,11 @@ else, just put the link to the * visited node"
 
 (setq +org-capture-journal-file (concat "~/Dropbox/roam/journal/" (today-buffer)))
 
-(defun write-today (content-to-write)
-  (set-buffer (today-buffer))
-  (save-excursion
-    (goto-char (point-max))
-    (insert content-to-write)))
-
-(defun look-for-header-insert (content)
+(defun look-for-header-insert (content header)
   (set-buffer (today-buffer))
   (save-excursion
     (goto-char (point-min))
-    (while (re-search-forward "^\\* vocab" (point-max) t)
+    (while (re-search-forward (concat "^\\* " header ) (point-max) t)
       (insert (concat "\n" content)))))
 
 (defun headerp (buffer heading)
@@ -884,7 +900,7 @@ else, just put the link to the * visited node"
         nil)
       )))
 
-
+;;setup the key-binds
 (map! (:leader
        (:desc "dict-lookup-with-journal"
         "s t" (lambda ()
@@ -893,7 +909,10 @@ else, just put the link to the * visited node"
                 (let ((thing (doom-thing-at-point-or-region 'word)))
                   (unless (headerp (today-buffer) "* vocab") (goto-char (point-max)) (insert "* vocab"))
                   (+lookup/dictionary-definition thing)
-                  (look-for-header-insert thing))))))
+                  (look-for-header-insert thing "vocab")))
+        )
+       (:desc "leave history with the w3m"
+        "c u r i" #'add-url-to-journal)))
 
 (add-to-list 'org-capture-templates
              '("j" "Journal" entry
@@ -901,13 +920,6 @@ else, just put the link to the * visited node"
                "* %?\n" :prepend t))
 
 (use-package ob)
-(use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook))
-
-(setq cutom-theme-directory "~/.doom.d/themes")
-
 (setq atco-dir "~/competi/")
 (defun atco ()
   (interactive)
@@ -965,6 +977,16 @@ else, just put the link to the * visited node"
       :desc "added the prefix"
       "a n" #'inline-img-wrap)
 
+;switch statement like in the javascript.
+(cl-defmacro switch ((piv) (test &body expr) &rest rest)
+  (if (eql (length rest) 1)
+   (unless (equal piv (caar rest))
+     'nil)
+  `(if (equal ,piv ,test)
+       ,@expr
+     (switch (,piv)
+             ,@rest))))
+
 ;; load environment value
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
   (add-to-list 'exec-path path))
@@ -998,3 +1020,8 @@ else, just put the link to the * visited node"
     )))
 (map! :leader
       :desc "calender view" "s c h" #'my-open-calendar)
+
+(map! :leader
+      :desc "connect sly" "c n" (lambda () (interactive) (sly-connect "localhost" 4545)))
+
+;;helper functions used by =emacsclient=.
