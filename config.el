@@ -805,16 +805,17 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       t
     nil))
 
+;I couldn't find the prepared thing for the org-dailies
 (defun get-today-file ()
   ;;get the file name of current date
   (let ((file-name (org-journal--get-entry-path))
         year month date)
     (string-match "[0-9]+" file-name)
     (setq file-name (match-string 0 file-name))
-    (setq year (substring file-name 0 4))
-    (setq month (substring file-name 4 6))
-    (setq date (substring file-name 6 8))
-    (format "%s-%s-%s.org" year month date)))
+    (destructuring-bind (year month date)
+        (mapcar #'(lambda (pos) (substring file-name (first pos) (car (last pos))))
+                (list '(0 4) '(4 6) '(6 8)))
+    (format "%s-%s-%s.org" year month date))))
 
 (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
   (org-roam-dailies-capture-today :KEYS "d") (save-buffer))
@@ -838,9 +839,9 @@ else, just put the link to the * visited node"
 
 (defun get-node-name (str)
   (string-match "-.*" str)
-  (print (substring (match-string 0 str) 1 (length (match-string 0 str))))
-  )
+  (print (substring (match-string 0 str) 1 (length (match-string 0 str)))))
 
+                                        ;this name should be on create journal
 (defun write-to (buffer)
   (with-current-buffer
       (let ((new-node (buffer-name)))
@@ -856,16 +857,17 @@ else, just put the link to the * visited node"
         (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
           (print "no-today file"))
 
+                                        ; if the link exist, skip, if no, create the link to it.
         (unless (linkp (get-node-name new-node))
           (save-excursion
-            (re-search-forward "* visited" (point-max) t)
-            (insert (format "\n[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)))))
+            (look-for-header-insert
+             (format "\n[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
+            ))
         (print (current-buffer)))))
 
 (defun add-url-to-journal ()
   (interactive)
   (look-for-header-insert (format "[[%s][%s]]\n" w3m-current-message (read-string "What's our title of this page?> ")) "visited"))
-
 
 (add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
 (add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
@@ -881,12 +883,18 @@ else, just put the link to the * visited node"
 
 (setq +org-capture-journal-file (concat "~/Dropbox/roam/journal/" (today-buffer)))
 
+                                        ;fishy
 (defun look-for-header-insert (content header)
   (set-buffer (today-buffer))
   (save-excursion
     (goto-char (point-min))
-    (while (re-search-forward (concat "^\\* " header ) (point-max) t)
+    (while (re-search-forward (concat "^\\* " header) (point-max) t)
       (insert (concat "\n" content)))))
+
+(defun insert-header-unless-exist (head)
+  (let ((headline (concat "* " head)))
+    (unless (headerp (today-buffer) headline)
+      (goto-char (point-max)) (insert headline))))
 
 (defun headerp (buffer heading)
   (set-buffer buffer)
@@ -907,7 +915,7 @@ else, just put the link to the * visited node"
                 (interactive)
 
                 (let ((thing (doom-thing-at-point-or-region 'word)))
-                  (unless (headerp (today-buffer) "* vocab") (goto-char (point-max)) (insert "* vocab"))
+                  (insert-header-unless-exist "vocab")
                   (+lookup/dictionary-definition thing)
                   (look-for-header-insert thing "vocab")))
         )
