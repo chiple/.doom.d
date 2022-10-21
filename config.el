@@ -30,7 +30,7 @@
 ;;smart toggle
 (map! :leader
       :desc "imenu-list"
-      "t l" #'imenu-list-smart-toggle)
+      "l t" #'imenu-list-smart-toggle)
 ;;visual line of numbers ではない
 
 (map! (:leader
@@ -84,8 +84,17 @@
 (map! (:leader
        (:desc "down on google"
         "o g" #'(lambda ()
-                   (interactive)
-                   (w3m-search "google" (read-string "google:: "))))))
+                  (interactive)
+                  (w3m-search "google" (read-string "google:: "))))
+       (:desc "open the link in the org file
+but I don't really wanna do this cause this just prove that I can't over write the <return> key."
+        "o o" #'(lambda ()
+                  (interactive)
+                  (let ((link (thing-at-point 'line t)))
+                    (if (null (string-match "\\[\\[\\(.*\\)\\]\\[" link))
+                        nil
+                      (w3m-goto-url (match-string 1 link)) )
+                    )))))
 
 (map! (:leader
        (:desc "sexp-forward" "s x f" #'sp-forward-sexp
@@ -419,7 +428,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       '("u" "code-link"
          plain
          (function org-code-capture--find-store-point)
-         "% {Summary}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote--get-remote-url))\n# %a"
+         "[% {Summary}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote--get-remote-url))\n# %a]"
          :immediate-finish t))
 
 (add-to-list 'org-capture-templates
@@ -477,8 +486,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       )
     head)))
 
-(ivy-read "headings" (get-existing-heading-in-buffer)
-          :action (lambda (x) (goto-char (cadr x))))
+(ivy-read "headings> " (get-existing-heading-in-buffer)
+          :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
+
+
 )
 (map! :leader
       :desc "heading list of current buffer"
@@ -812,56 +823,35 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         year month date)
     (string-match "[0-9]+" file-name)
     (setq file-name (match-string 0 file-name))
-    (destructuring-bind (year month date)
-        (mapcar #'(lambda (pos) (substring file-name (first pos) (car (last pos))))
+    (cl-destructuring-bind (year month date)
+        (mapcar #'(lambda (pos) (substring file-name (cl-first pos) (car (last pos))))
                 (list '(0 4) '(4 6) '(6 8)))
     (format "%s-%s-%s.org" year month date))))
 
 (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
   (org-roam-dailies-capture-today :KEYS "d") (save-buffer))
 
-(defun visited-nodep (buffer)
-  "This argument is just for the org journal of today.
-TODO This can be generic.
-if nil, just put the tag bottom of the org file
-else, just put the link to the * visited node"
-  (set-buffer buffer)
-  (save-excursion
-    (let ((nodes '()))
-      (goto-char (point-min))
-      (while (re-search-forward "^*" (point-max) t)
-        (add-to-list 'nodes (replace-regexp-in-string "\n" "" (thing-at-point 'line t))))
-      (if (member "* visited" nodes)
-          t
-        nil)
-      )))
-
-
 (defun get-node-name (str)
   (string-match "-.*" str)
   (print (substring (match-string 0 str) 1 (length (match-string 0 str)))))
 
-                                        ;this name should be on create journal
+;this name should be on create journal
+;most fishy place
 (defun write-to (buffer)
   (with-current-buffer
       (let ((new-node (buffer-name)))
         (set-buffer buffer)
         (goto-char (point-max))
-        ;;This can be more short, joining the unless into one statement.
-        ;;But this is easy to read and write.
-        (unless (visited-nodep buffer)
-          (save-excursion
-            (goto-char (point-max))
-            (insert "* visited")))
+
+        (insert-header-unless-exist "visited")
 
         (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
           (print "no-today file"))
-
-                                        ; if the link exist, skip, if no, create the link to it.
+        ; if the link exist, skip, if no, create the link to it.
         (unless (linkp (get-node-name new-node))
           (save-excursion
             (look-for-header-insert
-             (format "\n[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
+             (format "[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
             ))
         (print (current-buffer)))))
 
@@ -883,7 +873,7 @@ else, just put the link to the * visited node"
 
 (setq +org-capture-journal-file (concat "~/Dropbox/roam/journal/" (today-buffer)))
 
-                                        ;fishy
+;TODO really don't wanna make it today-buffer specific.
 (defun look-for-header-insert (content header)
   (set-buffer (today-buffer))
   (save-excursion
@@ -1014,9 +1004,26 @@ else, just put the link to the * visited node"
   (interactive)
   (org-switch-to-buffer-other-window "*Messages*"))
 (map! (:leader
-      :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
+       :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
 
 (modus-themes-load-vivendi)
+(defun get-max-linum (&optional file-or-buffer)
+  (interactive)
+  (cl-flet ((go-and-get-max-line ()(save-excursion
+                                     (goto-char (point-max))
+                                     (print (- (line-number-at-pos) 1))
+                                     )))
+    (cond
+     ((null file-or-buffer)
+      (go-and-get-max-line))
+     ((eql (type-of file-or-buffer) 'buffer)
+      (set-buffer file-or-buffer))
+     ((eql (type-of file-or-buffer) 'file)
+      (print "asdf"))
+     ('t (message "%s is not either the type; file, buffer, nil"))
+     )
+
+    ))
 
 (defun my-open-calendar ()
   (interactive)
@@ -1026,8 +1033,25 @@ else, just put the link to the * visited node"
     (cfw:org-create-source "Green")  ; org-agenda source
     (cfw:org-create-file-source "cal" "~/Dropbox/cal.org" "Cyan")  ; other org source
     )))
+
 (map! :leader
-      :desc "calender view" "s c h" #'my-open-calendar)
+      :desc "calender view" "s c h" #'my-open-calendar
+      :desc "calender at point" "g c a l" #'org-gcal-post-at-point)
+
+(let ((gcal-infos (json-read-file "~/Dropbox/au.json")))
+  (setq
+   org-gcal-client-id
+   (cdr (assoc 'client_id (cdar gcal-infos)))
+   org-gcal-client-secret (cdr (assoc 'client_secret (cdar gcal-infos)))
+   ;; ID が sample@foo.google.com のカレンダーと ~/calendar.org を同期
+   org-gcal-file-alist '(
+                         ("the.brainga@gmail.com" . "~/calendar.org")
+                         ("the.brainga@foo.google.com" .  "~/calendar2.org")
+                         ))
+  ;; token の保存場所を変更
+  (setq org-gcal-dir "~/Dropbox/org-gcal")
+
+  )
 
 (map! :leader
       :desc "connect sly" "c n" (lambda () (interactive) (sly-connect "localhost" 4545)))

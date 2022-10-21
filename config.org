@@ -49,9 +49,13 @@ I needs to write more "literal" part. And This config need to have the huge refa
 ;;smart toggle
 (map! :leader
       :desc "imenu-list"
-      "t l" #'imenu-list-smart-toggle)
+      "l t" #'imenu-list-smart-toggle)
 ;;visual line of numbers ではない
 #+end_src
+
+#+RESULTS:
+: imenu-list-smart-toggle
+
 ** snippet
 #+begin_src emacs-lisp
 (map! (:leader
@@ -125,14 +129,24 @@ I needs to write more "literal" part. And This config need to have the huge refa
 (map! (:leader
        (:desc "down on google"
         "o g" #'(lambda ()
-                   (interactive)
-                   (w3m-search "google" (read-string "google:: "))))))
+                  (interactive)
+                  (w3m-search "google" (read-string "google:: "))))
+       (:desc "open the link in the org file
+but I don't really wanna do this cause this just prove that I can't over write the <return> key."
+        "o o" #'(lambda ()
+                  (interactive)
+                  (let ((link (thing-at-point 'line t)))
+                    (if (null (string-match "\\[\\[\\(.*\\)\\]\\[" link))
+                        nil
+                      (w3m-goto-url (match-string 1 link)) )
+                    )))))
 
 (map! (:leader
        (:desc "sexp-forward" "s x f" #'sp-forward-sexp
         :desc "sexp-backward" "s x b" #'sp-backward-sexp
         :desc "sexp-kill" "s x d" #'sp-kill-sexp
         :desc "sexp-kill" "s x s" #'+default/search-other-project)))
+
 
 #+end_src
 
@@ -200,8 +214,6 @@ I needs to write more "literal" part. And This config need to have the huge refa
   (exec-path-from-shell-initialize))
 #+end_src
 ** key-bind
-定義のとこまでいく lsp-find-definition で、いったっきり帰ってこないのも
-なんだか不便なので、飛ぶ前の箇所を、マークしておく。
 #+begin_src emacs-lisp
 (defun mark-and-find-definition ()
   (interactive)
@@ -617,7 +629,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         '("p" "just-code-link"
          plain
          (function org-code-capture--find-store-point)
-         "%a"
+         "%A"
          :immediate-finish t))
 
 ;;keybinding
@@ -627,6 +639,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       "y c" #'org-code-capture--store-here)))
 
 #+end_src
+
+#+RESULTS:
+: org-code-capture--store-here
+
 ** babel
 #+begin_src emacs-lisp
 (use-package org-modern-indent
@@ -669,6 +685,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 ** org-benrify
 *** To search each headlines
+Go to the headiline point as the top of the screen.
 #+begin_src emacs-lisp
 (defun list-headings()
   (interactive)
@@ -681,13 +698,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       )
     head)))
 
-(ivy-read "headings" (get-existing-heading-in-buffer)
-          :action (lambda (x) (goto-char (cadr x))))
+(ivy-read "headings> " (get-existing-heading-in-buffer)
+          :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
+
+
 )
 (map! :leader
       :desc "heading list of current buffer"
       "l h" #'list-headings)
 #+end_src
+
+#+RESULTS:
+: list-headings
 
 ** tempo
 #+begin_src emacs-lisp
@@ -1097,7 +1119,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         (unless (linkp (get-node-name new-node))
           (save-excursion
             (look-for-header-insert
-             (format "\n[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
+             (format "[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
             ))
         (print (current-buffer)))))
 
@@ -1119,7 +1141,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (setq +org-capture-journal-file (concat "~/Dropbox/roam/journal/" (today-buffer)))
 
-;fishy
+;TODO really don't wanna make it today-buffer specific.
 (defun look-for-header-insert (content header)
   (set-buffer (today-buffer))
   (save-excursion
@@ -1163,6 +1185,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                (file +org-capture-journal-file)
                "* %?\n" :prepend t))
 #+end_src
+
+#+RESULTS:
+| j        | Journal        | entry | (file +org-capture-journal-file)     | * %?        |                   |   |
+| :prepend | t              |       |                                      |             |                   |   |
+| s        | ordinary stuff | plain | #'(lambda nil (print para ppa))      | %a          | :immediate-finish | t |
+| p        | just-code-link | plain | #'org-code-capture--find-store-point | %a          | :immediate-finish | t |
+| u        | code-link      | plain | #'org-code-capture--find-store-point | % {Summary} |                   |   |
 
 ** competitive
 #+begin_src emacs-lisp
@@ -1234,7 +1263,6 @@ For displaying the gif on the emacs.
 (map! :leader
       :desc "added the prefix"
       "a n" #'inline-img-wrap)
-
 #+end_src
 * utils
 For the extended syntax or frequent generic things are gathered here.
@@ -1249,6 +1277,9 @@ For the extended syntax or frequent generic things are gathered here.
      (switch (,piv)
              ,@rest))))
 #+end_src
+
+#+RESULTS:
+
 * shell
 #+begin_src emacs-lisp
 ;; load environment value
@@ -1277,10 +1308,30 @@ For the extended syntax or frequent generic things are gathered here.
   (interactive)
   (org-switch-to-buffer-other-window "*Messages*"))
 (map! (:leader
-      :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
+       :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
 
 (modus-themes-load-vivendi)
+(defun get-max-linum (&optional file-or-buffer)
+  (interactive)
+  (cl-flet ((go-and-get-max-line ()(save-excursion
+                                     (goto-char (point-max))
+                                     (print (- (line-number-at-pos) 1))
+                                     )))
+    (cond
+     ((null file-or-buffer)
+      (go-and-get-max-line))
+     ((eql (type-of file-or-buffer) 'buffer)
+      (set-buffer file-or-buffer))
+     ((eql (type-of file-or-buffer) 'file)
+      (print "asdf"))
+     ('t (message "%s is not either the type; file, buffer, nil"))
+     )
+
+    ))
 #+end_src
+
+#+RESULTS:
+: get-max-linum
 
 * calender
 #+begin_src emacs-lisp
@@ -1292,12 +1343,29 @@ For the extended syntax or frequent generic things are gathered here.
     (cfw:org-create-source "Green")  ; org-agenda source
     (cfw:org-create-file-source "cal" "~/Dropbox/cal.org" "Cyan")  ; other org source
     )))
+
 (map! :leader
-      :desc "calender view" "s c h" #'my-open-calendar)
+      :desc "calender view" "s c h" #'my-open-calendar
+      :desc "calender at point" "g c a l" #'org-gcal-post-at-point)
+
+(let ((gcal-infos (json-read-file "~/Dropbox/au.json")))
+  (setq
+   org-gcal-client-id
+   (cdr (assoc 'client_id (cdar gcal-infos)))
+   org-gcal-client-secret (cdr (assoc 'client_secret (cdar gcal-infos)))
+   ;; ID が sample@foo.google.com のカレンダーと ~/calendar.org を同期
+   org-gcal-file-alist '(
+                         ("the.brainga@gmail.com" . "~/calendar.org")
+                         ("the.brainga@foo.google.com" .  "~/calendar2.org")
+                         ))
+  ;; token の保存場所を変更
+  (setq org-gcal-dir "~/Dropbox/org-gcal")
+
+  )
 #+end_src
 
 #+RESULTS:
-: my-open-calendar
+: ~/Dropbox/org-gcal
 
 * nyxt
 #+begin_src emacs-lisp
