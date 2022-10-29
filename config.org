@@ -130,7 +130,9 @@ I needs to write more "literal" part. And This config need to have the huge refa
        (:desc "down on google"
         "o g" #'(lambda ()
                   (interactive)
-                  (w3m-search "google" (read-string "google:: "))))
+                  (let ((search-word (read-string "google:: ")))
+                    (with-splited-window
+                     (w3m-search "google" search-word)))))
        (:desc "open the link in the org file
 but I don't really wanna do this cause this just prove that I can't over write the <return> key."
         "o o" #'(lambda ()
@@ -139,7 +141,10 @@ but I don't really wanna do this cause this just prove that I can't over write t
                     (if (null (string-match "\\[\\[\\(.*\\)\\]\\[" link))
                         nil
                       (w3m-goto-url (match-string 1 link)) )
-                    )))))
+                    ))
+        "o G" #'(lambda ()
+                  (interactive)
+                  (w3m-search-new-session "google" (read-string "google:: "))))))
 
 (map! (:leader
        (:desc "sexp-forward" "s x f" #'sp-forward-sexp
@@ -254,6 +259,7 @@ but I don't really wanna do this cause this just prove that I can't over write t
 * Org
 ** general
 #+begin_src emacs-lisp
+
 (defun head-add ()
   (interactive)
   (with-current-buffer
@@ -578,6 +584,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       elgantt-show-header-depth t
       elgantt-draw-overarching-headers t)
 #+end_src
+
 ** reading
 #+begin_src emacs-lisp
 (defconst ladicle/org-journal-dir "~/roam/journal/")
@@ -689,20 +696,20 @@ Go to the headiline point as the top of the screen.
 #+begin_src emacs-lisp
 (defun list-headings()
   (interactive)
-(defun get-existing-heading-in-buffer ()
-  (save-excursion
-  (goto-char (point-min))
-  (let ((head '()))
-    (while (re-search-forward "^*" (point-max) t)
-      (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
-      )
-    head)))
+  (defun get-existing-heading-in-buffer ()
+    (save-excursion
+      (goto-char (point-min))
+      (let ((head '()))
+        (while (re-search-forward "^*" (point-max) t)
+          (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
+          )
+        head)))
 
-(ivy-read "headings> " (get-existing-heading-in-buffer)
-          :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
+  (ivy-read "headings> " (reverse (get-existing-heading-in-buffer))
+            :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
 
 
-)
+  )
 (map! :leader
       :desc "heading list of current buffer"
       "l h" #'list-headings)
@@ -712,6 +719,7 @@ Go to the headiline point as the top of the screen.
 : list-headings
 
 ** tempo
+Just shoutcut keywords for src-block. I really want to add the =:results output= as the default.
 #+begin_src emacs-lisp
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
@@ -845,10 +853,6 @@ Go to the headiline point as the top of the screen.
 |           | key       | func name               | shape   |
 |-----------+-----------+-------------------------+---------|
 | create    | SPC a j k | arrow down right        | └─>     |
-|           | SPC a j h | arrow down left         | <─┘     |
-|-----------+-----------+-------------------------+---------|
-| manuplate | SPC a p v | arrow path vertically   | ┘ or └  |
-|           |           |                         | ┤<─┸─>├ |
 |           |           |                         |         |
 |           | SPC a p h | arrow path horizontally | ┘ or └  |
 |-----------+-----------+-------------------------+---------|
@@ -1125,7 +1129,7 @@ Go to the headiline point as the top of the screen.
 
 (defun add-url-to-journal ()
   (interactive)
-  (look-for-header-insert (format "[[%s][%s]]\n" w3m-current-message (read-string "What's our title of this page?> ")) "visited"))
+  (look-for-header-insert (format "[[%s][%s]]\n" w3m-current-url(read-string "What's our title of this page?> ")) "visited"))
 
 (add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
 (add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
@@ -1190,7 +1194,7 @@ Go to the headiline point as the top of the screen.
 | j        | Journal        | entry | (file +org-capture-journal-file)     | * %?        |                   |   |
 | :prepend | t              |       |                                      |             |                   |   |
 | s        | ordinary stuff | plain | #'(lambda nil (print para ppa))      | %a          | :immediate-finish | t |
-| p        | just-code-link | plain | #'org-code-capture--find-store-point | %a          | :immediate-finish | t |
+| p        | just-code-link | plain | #'org-code-capture--find-store-point | %A          | :immediate-finish | t |
 | u        | code-link      | plain | #'org-code-capture--find-store-point | % {Summary} |                   |   |
 
 ** competitive
@@ -1268,14 +1272,19 @@ For displaying the gif on the emacs.
 For the extended syntax or frequent generic things are gathered here.
 #+begin_src emacs-lisp :results output
 ;switch statement like in the javascript.
-(cl-defmacro switch ((piv) (test &body expr) &rest rest)
-  (if (eql (length rest) 1)
-   (unless (equal piv (caar rest))
-     'nil)
+;or this name can be match using the name of the python.
+(cl-defmacro switch (piv (test &body expr) &rest rest)
+  (when (equal (length rest) 0)
+    'nil)
   `(if (equal ,piv ,test)
        ,@expr
-     (switch (,piv)
-             ,@rest))))
+     (switch ,piv
+             ,@rest)))
+
+(defmacro with-splited-window (body)
+  (+evil-window-vsplit-a)
+  (+evil/window-move-right)
+  body)
 #+end_src
 
 #+RESULTS:
@@ -1299,7 +1308,21 @@ For the extended syntax or frequent generic things are gathered here.
 
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
+(defun read-book-with-chrome ()
+  (interactive)
+  (ivy-read "books to read> "
+            (split-string (shell-command-to-string "cd ~/Dropbox/books && ls") "\n")
+            :require-match t
+            :action (lambda (choice) (shell-command (concat "google-chrome-stable ~/Dropbox/books/" choice)))))
+
+(map! :leader
+      :desc "using chrome, reading things, If the nyxt gets better I would use that."
+      "b o" #'read-book-with-chrome)
+
 #+end_src
+
+#+RESULTS:
+: read-book-with-chrome
 
 * misc
 
@@ -1364,8 +1387,6 @@ For the extended syntax or frequent generic things are gathered here.
   )
 #+end_src
 
-#+RESULTS:
-: ~/Dropbox/org-gcal
 
 * nyxt
 #+begin_src emacs-lisp
@@ -1375,3 +1396,19 @@ For the extended syntax or frequent generic things are gathered here.
 ;;helper functions used by =emacsclient=.
 #+end_src
 | lambda | nil | (interactive) | (sly-connect localhost 4545) |
+
+* autoload
+#+begin_src emacs-lisp
+
+;;;### (autoloads nil "tscn" "tscn.el" (25422 56915 349704 301000))
+;;; Generated autoloads from tscn.el
+
+(register-definition-prefixes "gdutil" '("format-prop" "group-by-prop" "prop-p" "tscn-lst"))
+
+;kszxcvkj;;***
+
+
+(register-definition-prefixes "test" '("testfile"))
+
+#+end_src
+

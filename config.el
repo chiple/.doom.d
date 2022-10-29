@@ -428,14 +428,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       '("u" "code-link"
          plain
          (function org-code-capture--find-store-point)
-         "[% {Summary}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote--get-remote-url))\n# %a]"
+         "% {Summary}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote--get-remote-url))\n# %a"
          :immediate-finish t))
 
 (add-to-list 'org-capture-templates
         '("p" "just-code-link"
          plain
          (function org-code-capture--find-store-point)
-         "%a"
+         "%A"
          :immediate-finish t))
 
 ;;keybinding
@@ -477,20 +477,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (defun list-headings()
   (interactive)
-(defun get-existing-heading-in-buffer ()
-  (save-excursion
-  (goto-char (point-min))
-  (let ((head '()))
-    (while (re-search-forward "^*" (point-max) t)
-      (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
-      )
-    head)))
+  (defun get-existing-heading-in-buffer ()
+    (save-excursion
+      (goto-char (point-min))
+      (let ((head '()))
+        (while (re-search-forward "^*" (point-max) t)
+          (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
+          )
+        head)))
 
-(ivy-read "headings> " (get-existing-heading-in-buffer)
-          :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
+  (ivy-read "headings> " (reverse (get-existing-heading-in-buffer))
+            :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
 
 
-)
+  )
 (map! :leader
       :desc "heading list of current buffer"
       "l h" #'list-headings)
@@ -857,7 +857,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (defun add-url-to-journal ()
   (interactive)
-  (look-for-header-insert (format "[[%s][%s]]\n" w3m-current-message (read-string "What's our title of this page?> ")) "visited"))
+  (look-for-header-insert (format "[[%s][%s]]\n" w3m-current-url(read-string "What's our title of this page?> ")) "visited"))
 
 (add-hook 'org-roam-capture-new-node-hook (lambda () (write-to (get-today-file))))
 (add-hook 'org-roam-find-file-hook (lambda () (write-to (get-today-file))))
@@ -976,14 +976,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       "a n" #'inline-img-wrap)
 
 ;switch statement like in the javascript.
-(cl-defmacro switch ((piv) (test &body expr) &rest rest)
-  (if (eql (length rest) 1)
-   (unless (equal piv (caar rest))
-     'nil)
+(cl-defmacro switch (piv (test &body expr) &rest rest)
+  (when (equal (length rest) 0)
+    'nil)
   `(if (equal ,piv ,test)
        ,@expr
-     (switch (,piv)
-             ,@rest))))
+     (switch ,piv
+             ,@rest)))
 
 ;; load environment value
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
@@ -999,6 +998,16 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
+(defun read-book-with-chrome ()
+  (interactive)
+  (ivy-read "books to read> "
+            (split-string (shell-command-to-string "cd ~/Dropbox/books && ls") "\n")
+            :require-match t
+            :action (lambda (choice) (shell-command (concat "google-chrome-stable ~/Dropbox/books/" choice)))))
+
+(map! :leader
+      :desc "using chrome, reading things, If the nyxt gets better I would use that."
+      "b o" #'read-book-with-chrome)
 
 (defun message-buffer-in-other-window()
   (interactive)
@@ -1057,3 +1066,14 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       :desc "connect sly" "c n" (lambda () (interactive) (sly-connect "localhost" 4545)))
 
 ;;helper functions used by =emacsclient=.
+
+
+;;;### (autoloads nil "tscn" "tscn.el" (25422 56915 349704 301000))
+;;; Generated autoloads from tscn.el
+
+(register-definition-prefixes "gdutil" '("format-prop" "group-by-prop" "prop-p" "tscn-lst"))
+
+;kszxcvkj;;***
+
+
+(register-definition-prefixes "test" '("testfile"))
