@@ -85,7 +85,9 @@
        (:desc "down on google"
         "o g" #'(lambda ()
                   (interactive)
-                  (w3m-search "google" (read-string "google:: "))))
+                  (let ((search-word (read-string "google:: ")))
+                    (with-splited-window
+                     (w3m-search "google" search-word)))))
        (:desc "open the link in the org file
 but I don't really wanna do this cause this just prove that I can't over write the <return> key."
         "o o" #'(lambda ()
@@ -94,7 +96,13 @@ but I don't really wanna do this cause this just prove that I can't over write t
                     (if (null (string-match "\\[\\[\\(.*\\)\\]\\[" link))
                         nil
                       (w3m-goto-url (match-string 1 link)) )
-                    )))))
+                    ))
+        "o G" #'(lambda ()
+                  (interactive)
+                  (w3m-search-new-session "google" (read-string "google:: ")))
+        "3 l" #'w3m-tab-next-buffer
+        "3 h" #'w3m-tab-previous-buffer
+        "3 d" #'w3m-delete-buffer)))
 
 (map! (:leader
        (:desc "sexp-forward" "s x f" #'sp-forward-sexp
@@ -280,7 +288,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
-
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(lisp . t)
@@ -295,6 +302,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(plantuml. t)
  '(lilypond. t)
  '(rust . t)
+ '(gnuplot . t)
  )
 
 (setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
@@ -976,6 +984,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       "a n" #'inline-img-wrap)
 
 ;switch statement like in the javascript.
+;or this name can be match using the name of the python.
 (cl-defmacro switch (piv (test &body expr) &rest rest)
   (when (equal (length rest) 0)
     'nil)
@@ -983,6 +992,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
        ,@expr
      (switch ,piv
              ,@rest)))
+
+(defmacro with-splited-window (body)
+  (+evil-window-vsplit-a)
+  (+evil/window-move-right)
+  body)
 
 ;; load environment value
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
@@ -994,7 +1008,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (setq w3m-use-tab-line nil))
 
 (map! (:leader
-       (:desc "just goes to w3m " "w 3" #'w3m)))
+       (:desc "just goes to w3m "
+        "w 3"
+        (lambda () (interactive)
+          (with-splited-window (w3m))))))
 
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
@@ -1033,6 +1050,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
      )
 
     ))
+
+(set-language-environment "Japanese")
+(map! :leader
+      :desc "switch to japanese" "j p" #'(lambda () (interactive) (set-input-method "japanese"))
+      :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
 
 (defun my-open-calendar ()
   (interactive)

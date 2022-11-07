@@ -140,11 +140,14 @@ but I don't really wanna do this cause this just prove that I can't over write t
                   (let ((link (thing-at-point 'line t)))
                     (if (null (string-match "\\[\\[\\(.*\\)\\]\\[" link))
                         nil
-                      (w3m-goto-url (match-string 1 link)) )
+                      (with-splited-window (w3m-goto-url (match-string 1 link))))
                     ))
         "o G" #'(lambda ()
                   (interactive)
-                  (w3m-search-new-session "google" (read-string "google:: "))))))
+                  (w3m-search-new-session "google" (read-string "google:: ")))
+        "3 l" #'w3m-tab-next-buffer
+        "3 h" #'w3m-tab-previous-buffer
+        "3 d" #'w3m-delete-buffer)))
 
 (map! (:leader
        (:desc "sexp-forward" "s x f" #'sp-forward-sexp
@@ -410,7 +413,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 
-
 (org-babel-do-load-languages
  'org-babel-load-languages
  '(lisp . t)
@@ -425,6 +427,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(plantuml. t)
  '(lilypond. t)
  '(rust . t)
+ '(gnuplot . t)
  )
 
 #+end_src
@@ -449,6 +452,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 
 #+end_src
+
+#+RESULTS:
+: org-babel-execute:circler
+
 ** org-roam
 *** org-roam-capture-template
 #+begin_src emacs-lisp
@@ -1304,7 +1311,10 @@ For the extended syntax or frequent generic things are gathered here.
   (setq w3m-use-tab-line nil))
 
 (map! (:leader
-       (:desc "just goes to w3m " "w 3" #'w3m)))
+       (:desc "just goes to w3m "
+        "w 3"
+        (lambda () (interactive)
+          (with-splited-window (w3m))))))
 
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
@@ -1325,6 +1335,9 @@ For the extended syntax or frequent generic things are gathered here.
 : read-book-with-chrome
 
 * misc
+:PROPERTIES:
+:ARCHIVE:  asdf
+:END:
 
 #+begin_src emacs-lisp
 (defun message-buffer-in-other-window()
@@ -1348,13 +1361,24 @@ For the extended syntax or frequent generic things are gathered here.
      ((eql (type-of file-or-buffer) 'file)
       (print "asdf"))
      ('t (message "%s is not either the type; file, buffer, nil"))
-     )
+     )))
+        #+end_src
 
-    ))
+* lang
+#+begin_src emacs-lisp
+(set-language-environment "Japanese")
+(map! :leader
+      :desc "switch to japanese" "j p" #'(lambda () (interactive) (set-input-method "japanese"))
+      :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
+
+(load "~/Projects/emacs/deepl.el")
+
+(defun hira-kata (start end)
+  (interactive "r")
+  (let ((region (buffer-substring start end)))
+    (delete-region start end)
+    (insert (shell-command-to-string (concat "python ~/tools/hiragana_katakana.py " region)))))
 #+end_src
-
-#+RESULTS:
-: get-max-linum
 
 * calender
 #+begin_src emacs-lisp

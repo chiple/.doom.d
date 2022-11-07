@@ -116,6 +116,9 @@
 (package! emacs-calfw
   :recipe (:host github :repo "kiwanami/emacs-calfw"))
 (package! mu4e)
+(package! gnuplot)
+
+(package! ox-pandoc)
 
 (package! nov.el
   :recipe (:host github :repo "wasamasa/nov.el"))
