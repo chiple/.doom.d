@@ -1333,7 +1333,9 @@ For displaying the gif on the emacs.
 : read-book-with-chrome
 
 * misc
+uncategorized
 #+begin_src emacs-lisp
+
 (use-package nyan-mode)
 (setq nyan-mode t)
 #+end_src
@@ -1341,7 +1343,31 @@ For displaying the gif on the emacs.
 :ARCHIVE:  asdf
 :END:
 
+* git
+Key binds for magit in doom way.
 #+begin_src emacs-lisp
+(map! (:leader
+       :desc "git commit after stageing" "g c s"
+       (lambda () (interactive)
+                           (magit-stage)
+                           (magit-commit))))
+#+end_src
+
+#+RESULTS:
+| lambda | nil | (interactive) | (magit-stage) | (magit-commit) |
+
+* window
+utils for using window. I think this is a bit not categorized well
+#+begin_src emacs-lisp
+;;FIXME looks ugly.
+(defun find-file-other-window ()
+  (interactive)
+  (with-splited-window
+   (find-file-at-point)))
+
+(map! (:leader
+       :desc "split the window and search file" "f F" #'find-file-other-window))
+
 (defun message-buffer-in-other-window()
   (interactive)
   (org-switch-to-buffer-other-window "*Messages*"))
@@ -1365,6 +1391,9 @@ For displaying the gif on the emacs.
      ('t (message "%s is not either the type; file, buffer, nil"))
      )))
         #+end_src
+
+        #+RESULTS:
+        : get-max-linum
 
 * lang
 #+begin_src emacs-lisp
