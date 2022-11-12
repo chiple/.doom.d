@@ -15,6 +15,28 @@ I needs to write more "literal" part. And This config need to have the huge refa
 #+RESULTS:
 : bookmark-save
 
+* utils
+For the extended syntax or frequent generic things are gathered here.
+#+begin_src emacs-lisp :results output
+;switch statement like in the javascript.
+;or this name can be match using the name of the python.
+(cl-defmacro switch (piv (test &body expr) &rest rest)
+  (when (equal (length rest) 0)
+    'nil)
+  `(if (equal ,piv ,test)
+       ,@expr
+     (switch ,piv
+             ,@rest)))
+
+(defmacro with-splited-window (body)
+  `(progn
+     (+evil-window-vsplit-a)
+     (+evil/window-move-right)
+     ,body))
+#+end_src
+
+#+RESULTS:
+
 * key-bindings
 ** org
 #+BEGIN_SRC emacs-lisp
@@ -164,7 +186,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
 * dashboard
 #+begin_src emacs-lisp
 (use-package dashboard
-  :ensure t
   :config
   (dashboard-setup-startup-hook))
 (setq dashboard-theme-directory (assoc-delete-all 'recents dashboard-item-generators))
@@ -173,7 +194,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
   '(doom-dashboard-banner :foreground "red"  :weight bold)
   '(doom-dashboard-footer :inherit font-lock-constant-face)
   '(doom-dashboard-footer-icon :inherit all-the-icons-red)
-  '(doom-dashboard-loaded :inherit font-lock-warning-face)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
 (set-face-attribute 'default nil :height 200)
@@ -684,7 +704,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (doom! :lang
        (org +hugo))
 (use-package ox-hugo
-  :ensure t
   :after ox)
 (setq easy-hugo-url "https://chiple.github.io")
 (setq easy-hugo-sshdomain "https://chiple.github.io")
@@ -1122,8 +1141,6 @@ Just shoutcut keywords for src-block. I really want to add the =:results output=
         (set-buffer buffer)
         (goto-char (point-max))
 
-        (insert-header-unless-exist "visited")
-
         (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
           (print "no-today file"))
         ; if the link exist, skip, if no, create the link to it.
@@ -1132,6 +1149,7 @@ Just shoutcut keywords for src-block. I really want to add the =:results output=
             (look-for-header-insert
              (format "[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
             ))
+        (insert-header-unless-exist "visited")
         (print (current-buffer)))))
 
 (defun add-url-to-journal ()
@@ -1275,26 +1293,6 @@ For displaying the gif on the emacs.
       :desc "added the prefix"
       "a n" #'inline-img-wrap)
 #+end_src
-* utils
-For the extended syntax or frequent generic things are gathered here.
-#+begin_src emacs-lisp :results output
-;switch statement like in the javascript.
-;or this name can be match using the name of the python.
-(cl-defmacro switch (piv (test &body expr) &rest rest)
-  (when (equal (length rest) 0)
-    'nil)
-  `(if (equal ,piv ,test)
-       ,@expr
-     (switch ,piv
-             ,@rest)))
-
-(defmacro with-splited-window (body)
-  (+evil-window-vsplit-a)
-  (+evil/window-move-right)
-  body)
-#+end_src
-
-#+RESULTS:
 
 * shell
 #+begin_src emacs-lisp
@@ -1335,6 +1333,10 @@ For the extended syntax or frequent generic things are gathered here.
 : read-book-with-chrome
 
 * misc
+#+begin_src emacs-lisp
+(use-package nyan-mode)
+(setq nyan-mode t)
+#+end_src
 :PROPERTIES:
 :ARCHIVE:  asdf
 :END:
@@ -1368,7 +1370,7 @@ For the extended syntax or frequent generic things are gathered here.
 #+begin_src emacs-lisp
 (set-language-environment "Japanese")
 (map! :leader
-      :desc "switch to japanese" "j p" #'(lambda () (interactive) (set-input-method "japanese"))
+      :desc "switch to japanese" "j a" #'(lambda () (interactive) (set-input-method "japanese"))
       :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
 
 (load "~/Projects/emacs/deepl.el")
@@ -1379,6 +1381,9 @@ For the extended syntax or frequent generic things are gathered here.
     (delete-region start end)
     (insert (shell-command-to-string (concat "python ~/tools/hiragana_katakana.py " region)))))
 #+end_src
+
+#+RESULTS:
+: hira-kata
 
 * calender
 #+begin_src emacs-lisp
@@ -1435,4 +1440,3 @@ For the extended syntax or frequent generic things are gathered here.
 (register-definition-prefixes "test" '("testfile"))
 
 #+end_src
-
