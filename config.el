@@ -3,9 +3,25 @@
        :desc "List bookmarks" "L" #'list-bookmarks
        :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
 
+;switch statement like in the javascript.
+;or this name can be match using the name of the python.
+(cl-defmacro switch (piv (test &body expr) &rest rest)
+  (when (equal (length rest) 0)
+    'nil)
+  `(if (equal ,piv ,test)
+       ,@expr
+     (switch ,piv
+             ,@rest)))
+
+(defmacro with-splited-window (body)
+  `(progn
+     (+evil-window-vsplit-a)
+     (+evil/window-move-right)
+     ,body))
+
 ;;not classified
 (map! (:leader
-  (:desc "org-table" "s h" #'eshell
+  (:desc "org-table" "s h" (lambda () (interactive) (with-splited-window (eshell)))
    :desc "zoom" "z z" #'+hydra/text-zoom/body
    :desc "org-table" "t o" #'org-table-create
    :desc "elgantt ""g n" #'elgantt-open
@@ -30,7 +46,7 @@
 ;;smart toggle
 (map! :leader
       :desc "imenu-list"
-      "l t" #'imenu-list-smart-toggle)
+      "l e" #'imenu-list-smart-toggle)
 ;;visual line of numbers ではない
 
 (map! (:leader
@@ -95,7 +111,7 @@ but I don't really wanna do this cause this just prove that I can't over write t
                   (let ((link (thing-at-point 'line t)))
                     (if (null (string-match "\\[\\[\\(.*\\)\\]\\[" link))
                         nil
-                      (w3m-goto-url (match-string 1 link)) )
+                      (with-splited-window (w3m-goto-url (match-string 1 link))))
                     ))
         "o G" #'(lambda ()
                   (interactive)
@@ -111,7 +127,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
         :desc "sexp-kill" "s x s" #'+default/search-other-project)))
 
 (use-package dashboard
-  :ensure t
   :config
   (dashboard-setup-startup-hook))
 (setq dashboard-theme-directory (assoc-delete-all 'recents dashboard-item-generators))
@@ -120,7 +135,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
   '(doom-dashboard-banner :foreground "red"  :weight bold)
   '(doom-dashboard-footer :inherit font-lock-constant-face)
   '(doom-dashboard-footer-icon :inherit all-the-icons-red)
-  '(doom-dashboard-loaded :inherit font-lock-warning-face)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
 (set-face-attribute 'default nil :height 200)
@@ -474,7 +488,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (doom! :lang
        (org +hugo))
 (use-package ox-hugo
-  :ensure t
   :after ox)
 (setq easy-hugo-url "https://chiple.github.io")
 (setq easy-hugo-sshdomain "https://chiple.github.io")
@@ -483,25 +496,25 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq easy-hugo-postdir "content/post")
 (setq org-hugo-base-dir "~/chiple.github.io/")
 
-(defun list-headings()
+(defun display-list-of (what-to-find)
   (interactive)
   (defun get-existing-heading-in-buffer ()
     (save-excursion
       (goto-char (point-min))
       (let ((head '()))
-        (while (re-search-forward "^*" (point-max) t)
+        (while (re-search-forward what-to-find (point-max) t)
           (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
           )
         head)))
-
   (ivy-read "headings> " (reverse (get-existing-heading-in-buffer))
-            :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
-
-
-  )
+            :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos))))))
 (map! :leader
       :desc "heading list of current buffer"
-      "l h" #'list-headings)
+      "l h" (lambda () (interactive) (display-list-of "^*")))
+
+(map! :leader
+      :desc  "display TODO in the buffer and go there if you want"
+      "l t" (lambda () (interactive) (display-list-of "TODO")))
 
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
@@ -851,8 +864,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
         (set-buffer buffer)
         (goto-char (point-max))
 
-        (insert-header-unless-exist "visited")
-
         (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
           (print "no-today file"))
         ; if the link exist, skip, if no, create the link to it.
@@ -861,6 +872,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
             (look-for-header-insert
              (format "[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
             ))
+        (insert-header-unless-exist "visited")
         (print (current-buffer)))))
 
 (defun add-url-to-journal ()
@@ -983,21 +995,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       :desc "added the prefix"
       "a n" #'inline-img-wrap)
 
-;switch statement like in the javascript.
-;or this name can be match using the name of the python.
-(cl-defmacro switch (piv (test &body expr) &rest rest)
-  (when (equal (length rest) 0)
-    'nil)
-  `(if (equal ,piv ,test)
-       ,@expr
-     (switch ,piv
-             ,@rest)))
-
-(defmacro with-splited-window (body)
-  (+evil-window-vsplit-a)
-  (+evil/window-move-right)
-  body)
-
 ;; load environment value
 (dolist (path (reverse (split-string (getenv "PATH") ":")))
   (add-to-list 'exec-path path))
@@ -1026,6 +1023,28 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       :desc "using chrome, reading things, If the nyxt gets better I would use that."
       "b o" #'read-book-with-chrome)
 
+;(use-package nyan-mode)
+;(setq nyan-mode t)
+(setq doom-modeline-mode 'nil)
+;(load-file "~/Dropbox/POKE/Elisp/pokel.el")
+;(setq pokel-mode t)
+
+(map! (:leader
+       :desc "git commit after stageing" "g c s"
+       (lambda () (interactive) (magit-stage) (magit-commit))))
+
+;;FIXME looks ugly. This just work. Can I use the _advice-add_ for this?
+(defun find-file-other-window ()
+  (interactive)
+  (with-splited-window
+   (find-file
+    (car (find-file-read-args "Find file: "
+                        (confirm-nonexistent-file-or-buffer)))
+    )))
+
+(map! (:leader
+       :desc "split the window and search file" "f F" #'find-file-other-window))
+
 (defun message-buffer-in-other-window()
   (interactive)
   (org-switch-to-buffer-other-window "*Messages*"))
@@ -1047,14 +1066,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
      ((eql (type-of file-or-buffer) 'file)
       (print "asdf"))
      ('t (message "%s is not either the type; file, buffer, nil"))
-     )
-
-    ))
+     )))
 
 (set-language-environment "Japanese")
 (map! :leader
-      :desc "switch to japanese" "j p" #'(lambda () (interactive) (set-input-method "japanese"))
+      :desc "switch to japanese" "j a" #'(lambda () (interactive) (set-input-method "japanese"))
       :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
+
+(load "~/Projects/emacs/deepl.el")
+
+(defun hira-kata (start end)
+  (interactive "r")
+  (let ((region (buffer-substring start end)))
+    (delete-region start end)
+    (insert (shell-command-to-string (concat "python ~/tools/hiragana_katakana.py " region)))))
 
 (defun my-open-calendar ()
   (interactive)
@@ -1096,6 +1121,5 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (register-definition-prefixes "gdutil" '("format-prop" "group-by-prop" "prop-p" "tscn-lst"))
 
 ;kszxcvkj;;***
-
 
 (register-definition-prefixes "test" '("testfile"))

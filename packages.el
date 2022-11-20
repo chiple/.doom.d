@@ -120,6 +120,9 @@
 
 (package! ox-pandoc)
 
+(package! nyan-mode
+  :recipe (:host github :repo "TeMPOral/nyan-mode"))
+
 (package! nov.el
   :recipe (:host github :repo "wasamasa/nov.el"))
 

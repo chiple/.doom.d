@@ -12,9 +12,6 @@ I needs to write more "literal" part. And This config need to have the huge refa
        :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
 #+END_SRC
 
-#+RESULTS:
-: bookmark-save
-
 * utils
 For the extended syntax or frequent generic things are gathered here.
 #+begin_src emacs-lisp :results output
@@ -35,14 +32,12 @@ For the extended syntax or frequent generic things are gathered here.
      ,body))
 #+end_src
 
-#+RESULTS:
-
 * key-bindings
 ** org
 #+BEGIN_SRC emacs-lisp
 ;;not classified
 (map! (:leader
-  (:desc "org-table" "s h" #'eshell
+  (:desc "org-table" "s h" (lambda () (interactive) (with-splited-window (eshell)))
    :desc "zoom" "z z" #'+hydra/text-zoom/body
    :desc "org-table" "t o" #'org-table-create
    :desc "elgantt ""g n" #'elgantt-open
@@ -71,12 +66,13 @@ For the extended syntax or frequent generic things are gathered here.
 ;;smart toggle
 (map! :leader
       :desc "imenu-list"
-      "l t" #'imenu-list-smart-toggle)
+      "l e" #'imenu-list-smart-toggle)
 ;;visual line of numbers ではない
 #+end_src
 
 #+RESULTS:
 : imenu-list-smart-toggle
+
 
 ** snippet
 #+begin_src emacs-lisp
@@ -85,9 +81,6 @@ For the extended syntax or frequent generic things are gathered here.
       :desc "snippets-insert" "s n i" #'+snippets/new
       :desc "snippets-edit" "s n e" #'+snippets/edit)))
 #+end_src
-
-#+RESULTS:
-: +snippets/edit
 
 ** text-edit
 #+begin_src emacs-lisp
@@ -180,8 +173,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
 
 #+end_src
 
-#+RESULTS:
-: +default/search-other-project
 
 * dashboard
 #+begin_src emacs-lisp
@@ -198,9 +189,9 @@ but I don't really wanna do this cause this just prove that I can't over write t
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
 (set-face-attribute 'default nil :height 200)
 #+end_src
-* Theme
-#+BEGIN_SRC emacs-lis p
-#+END_SRC
+
+#+RESULTS:
+
 * Langs and Dev
 ** glsl-mode
 #+begin_src emacs-lisp
@@ -252,8 +243,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
       (:desc "lsp search difinition" "l s d" #'mark-and-find-definition)))
 #+end_src
 
-#+RESULTS:
-: mark-and-find-definition
 
 * LISP
 ** RACKET
@@ -293,8 +282,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
       :desc "don't wanna write * again and again" "h h" #'head-add)
 #+end_src
 
-#+RESULTS:
-: head-add
 
 ** habit
 #+begin_src emacs-lisp
@@ -350,8 +337,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
 
 #+end_src
 
-#+RESULTS:
-: ((1.0001 . org-warning) (0.0 . org-upcoming-deadline))
 
 
 **** agenda styles
@@ -452,7 +437,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+end_src
 
-#+RESULTS:
 
 **** circler
 #+begin_src emacs-lisp
@@ -473,8 +457,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+end_src
 
-#+RESULTS:
-: org-babel-execute:circler
 
 ** org-roam
 *** org-roam-capture-template
@@ -674,8 +656,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+end_src
 
-#+RESULTS:
-: org-code-capture--store-here
 
 ** babel
 #+begin_src emacs-lisp
@@ -713,36 +693,38 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq org-hugo-base-dir "~/chiple.github.io/")
 #+end_src
 
-#+RESULTS:
-: ox-hugo
 
 ** org-benrify
 *** To search each headlines
 Go to the headiline point as the top of the screen.
 #+begin_src emacs-lisp
-(defun list-headings()
+
+(defun display-list-of (what-to-find)
   (interactive)
   (defun get-existing-heading-in-buffer ()
     (save-excursion
       (goto-char (point-min))
       (let ((head '()))
-        (while (re-search-forward "^*" (point-max) t)
+        (while (re-search-forward what-to-find (point-max) t)
           (add-to-list 'head (list (replace-regexp-in-string "\n" "" (thing-at-point 'line nil) )(point)))
           )
         head)))
-
   (ivy-read "headings> " (reverse (get-existing-heading-in-buffer))
-            :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos)))))
-
-
-  )
+            :action (lambda (x) (progn (goto-char (cadr x)) (evil-scroll-line-to-top (line-number-at-pos))))))
 (map! :leader
       :desc "heading list of current buffer"
-      "l h" #'list-headings)
+      "l h" (lambda () (interactive) (display-list-of "^*")))
+
+(map! :leader
+      :desc  "display TODO in the buffer and go there if you want"
+      "l t" (lambda () (interactive) (display-list-of "TODO")))
 #+end_src
 
+
+
 #+RESULTS:
-: list-headings
+| lambda | nil | (interactive) | (display-list-of TODO) |
+
 
 ** tempo
 Just shoutcut keywords for src-block. I really want to add the =:results output= as the default.
@@ -1090,8 +1072,6 @@ Just shoutcut keywords for src-block. I really want to add the =:results output=
         :desc "to-workspace" "w d"#'+workspace/delete)))
 #+end_src
 
-#+RESULTS:
-: +workspace/delete
 
 * journal utils
 #+begin_src emacs-lisp
@@ -1215,12 +1195,6 @@ Just shoutcut keywords for src-block. I really want to add the =:results output=
                "* %?\n" :prepend t))
 #+end_src
 
-#+RESULTS:
-| j        | Journal        | entry | (file +org-capture-journal-file)     | * %?        |                   |   |
-| :prepend | t              |       |                                      |             |                   |   |
-| s        | ordinary stuff | plain | #'(lambda nil (print para ppa))      | %a          | :immediate-finish | t |
-| p        | just-code-link | plain | #'org-code-capture--find-store-point | %A          | :immediate-finish | t |
-| u        | code-link      | plain | #'org-code-capture--find-store-point | % {Summary} |                   |   |
 
 ** competitive
 #+begin_src emacs-lisp
@@ -1326,31 +1300,33 @@ For displaying the gif on the emacs.
 (map! :leader
       :desc "using chrome, reading things, If the nyxt gets better I would use that."
       "b o" #'read-book-with-chrome)
-
 #+end_src
 
-#+RESULTS:
-: read-book-with-chrome
 
 * misc
 uncategorized
 #+begin_src emacs-lisp
-
-(use-package nyan-mode)
-(setq nyan-mode t)
+;(use-package nyan-mode)
+;(setq nyan-mode t)
+(setq doom-modeline-mode 'nil)
+(load-file "~/Dropbox/POKE/Elisp/pokel.el")
+(setq pokel-mode t)
 #+end_src
+
+#+RESULTS:
+: t
+
 :PROPERTIES:
 :ARCHIVE:  asdf
 :END:
+
 
 * git
 Key binds for magit in doom way.
 #+begin_src emacs-lisp
 (map! (:leader
        :desc "git commit after stageing" "g c s"
-       (lambda () (interactive)
-                           (magit-stage)
-                           (magit-commit))))
+       (lambda () (interactive) (magit-stage) (magit-commit))))
 #+end_src
 
 #+RESULTS:
@@ -1359,11 +1335,14 @@ Key binds for magit in doom way.
 * window
 utils for using window. I think this is a bit not categorized well
 #+begin_src emacs-lisp
-;;FIXME looks ugly.
+;;FIXME looks ugly. This just work. Can I use the _advice-add_ for this?
 (defun find-file-other-window ()
   (interactive)
   (with-splited-window
-   (find-file-at-point)))
+   (find-file
+    (car (find-file-read-args "Find file: "
+                        (confirm-nonexistent-file-or-buffer)))
+    )))
 
 (map! (:leader
        :desc "split the window and search file" "f F" #'find-file-other-window))
@@ -1395,6 +1374,7 @@ utils for using window. I think this is a bit not categorized well
         #+RESULTS:
         : get-max-linum
 
+
 * lang
 #+begin_src emacs-lisp
 (set-language-environment "Japanese")
@@ -1410,9 +1390,6 @@ utils for using window. I think this is a bit not categorized well
     (delete-region start end)
     (insert (shell-command-to-string (concat "python ~/tools/hiragana_katakana.py " region)))))
 #+end_src
-
-#+RESULTS:
-: hira-kata
 
 * calender
 #+begin_src emacs-lisp
@@ -1465,7 +1442,5 @@ utils for using window. I think this is a bit not categorized well
 
 ;kszxcvkj;;***
 
-
 (register-definition-prefixes "test" '("testfile"))
-
 #+end_src
