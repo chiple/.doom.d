@@ -333,36 +333,79 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       (org-babel-eval cmd body)))
 
 (after! org-roam
-(setq org-roam-capture-templates
-      '(("d" "default" plain
-         "%?"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
+  (setq org-roam-capture-templates
+        '(("d" "default" plain
+           "%?"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t)
 
-        ("l" "programming language" plain
-         "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
+          ("l" "programming language" plain
+           "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t)
 
-        ("b" "book notes" plain
-         "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
-        ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
-         :unnarrowed t)
-        ("s" "ordinary stuff" "* aha"
-         :fi-new (file+haed "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
-         :unnarrowed t)
-        )))
+          ("b" "book notes" plain
+           "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t)
+          ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+           :unnarrowed t)
+          ("s" "ordinary stuff" "* aha"
+           :fi-new (file+haed "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+           :unnarrowed t)
+          )))
+
+(defun get-roam-links-json ()
+  (json-encode-alist
+   (org-uniquify-alist
+    (org-roam-db-query
+     `[:select  [links:source
+                 links:dest]
+       :from links
+       :where (= links:type "id")]))))
+
+(defun get-roam-nodes-json ()
+  (json-encode-alist (org-roam-db-query [:select [id
+                                                  file
+                                                  title
+                                                  level
+                                                  pos
+                                                  olp
+                                                  properties
+                                                  (funcall group-concat tag
+                                                           (emacsql-escape-raw \, ))]
+                                         :as tags
+                                         :from nodes
+                                         :left-join tags
+                                         :on (= id node_id)
+                                         :group :by id])))
+
+
+;; for the homepage, I have to prepare the id and link information as json.
+(defun create-node-and-link-json ()
+  (interactive)
+  (let ((output-dir "~/Dropbox/POKE/Web/raedme/public/texts"))
+    (when (equal org-roam-directory output-dir)
+      (with-temp-file  (concat output-dir "/links.json")
+        (insert (get-roam-links-json)))
+      (with-temp-file (concat output-dir "/nodes.json")
+        (insert (get-roam-nodes-json)))
+      )
+    (message "node.json and links.json was written")
+    ))
+
+(add-to-list 'org-roam-capture-new-node-hook #'create-node-and-link-json)
 
 (defun inuru ()
   (interactive)
-  (let ((select '((me . roam) (share . loggg))))
+  (let ((select '((me . roam)
+                  (share . loggg)
+                  (homepage . POKE/Web/raedme/public/texts))))
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
     :require-match t
     :action (lambda (choice)
-              (setq org-roam-directory (concat "/home/ryu/Dropbox/"
+              (setq org-roam-directory (concat "~/Dropbox/"
                                                (symbol-name (cdr choice)))))))
   (org-roam-db-sync))
 
@@ -526,7 +569,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
-(add-to-list 'org-structure-template-alist '("js" . "src javascript"))
+(add-to-list 'org-structure-template-alist '("js" . "src js"))
 (add-to-list 'org-structure-template-alist '("circler" . "src circler"))
 (add-to-list 'org-structure-template-alist '("lil" . "src lilypond"))
 
@@ -1025,9 +1068,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 ;(use-package nyan-mode)
 ;(setq nyan-mode t)
-(setq doom-modeline-mode 'nil)
-;(load-file "~/Dropbox/POKE/Elisp/pokel.el")
-;(setq pokel-mode t)
+;;(setq doom-modeline-mode 'nil)
+;;(load-file "~/Dropbox/POKE/Elisp/pokel.el")
+;;(setq pokel-mode t)
 
 (map! (:leader
        :desc "git commit after stageing" "g c s"
