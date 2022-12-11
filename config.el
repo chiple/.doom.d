@@ -20,8 +20,11 @@
      ,body))
 
 ;;not classified
+
 (map! (:leader
-  (:desc "org-table" "s h" (lambda () (interactive) (with-splited-window (eshell)))
+  (:desc "gosh with splited window" "s h"
+   ;;this is for shell but that's gauche, not eshell.
+   (lambda () (interactive) (with-splited-window (run-scheme "")))
    :desc "zoom" "z z" #'+hydra/text-zoom/body
    :desc "org-table" "t o" #'org-table-create
    :desc "elgantt ""g n" #'elgantt-open
@@ -58,6 +61,7 @@
       :desc "heml kill ring"
       "k r" #'helm-show-kill-ring)
 
+;;switching text up and down.
 (defun move-line-up ()
   "Move up the current line."
   (interactive)
@@ -145,6 +149,7 @@ but I don't really wanna do this cause this just prove that I can't over write t
 (setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
 
 (setq lsp-auto-guess-root t)
+(global-ede-mode t)
 
 (when (string-equal system-type "darwin")
 (setq gdscript-godot-executable "~/Desktop/Godot.app/Contents/MacOS/Godot"))
@@ -164,8 +169,26 @@ but I don't really wanna do this cause this just prove that I can't over write t
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+(add-hook 'typescript-mode-hook 'lsp-deferred)
+
+(use-package dap-mode
+  :custom
+  (dap-lldb-debug-program `("/Users/motchang/.vscode/extensions/lanza.lldb-vscode-0.2.2/bin/darwin/bin/lldb-vscode"))
+  :config
+  (dap-mode 1)
+  (dap-tooltip-mode 1)
+  (require 'dap-lldb)
+  (use-package dap-ui
+      :ensure nil
+      :config
+      (dap-ui-mode 1)))
+  (require 'dap-node)
+(defun my-setup-dap-node ()
+  "Require dap-node feature and run dap-node-setup if VSCode module isn't already installed"
+  (unless (file-exists-p dap-node-debug-path) (dap-node-setup)))
+(add-hook 'typescript-mode-hook 'my-setup-dap-node)
+
+  (exec-path-from-shell-initialize)
 
 (defun mark-and-find-definition ()
   (interactive)
@@ -174,6 +197,13 @@ but I don't really wanna do this cause this just prove that I can't over write t
 
 (map! (:leader
       (:desc "lsp search difinition" "l s d" #'mark-and-find-definition)))
+
+(setq geiser-gauche-binary "/usr/bin/gosh")
+(setq scheme-program-name "gosh -i")
+(setq geiser-active-implementations '(guile gauche))
+(use-package geiser-gauche
+  :after geiser
+  :init (add-to-list 'geiser-active-implementations 'gauche))
 
 (add-hook 'racket-mode-hook
           (lambda ()
@@ -359,11 +389,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (defun get-roam-links-json ()
   (json-encode-alist
    (org-uniquify-alist
-    (org-roam-db-query
-     `[:select  [links:source
-                 links:dest]
-       :from links
-       :where (= links:type "id")]))))
+    (mapcar #'(lambda (x) (list (intern (car x)) (cadr x)))
+            (org-roam-db-query
+             `[:select  [links:source
+                         links:dest]
+               :from links
+               :where (= links:type "id")])))
+   ))
 
 (defun get-roam-nodes-json ()
   (json-encode-alist (org-roam-db-query [:select [id
@@ -397,10 +429,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (add-to-list 'org-roam-capture-new-node-hook #'create-node-and-link-json)
 
-(defun inuru ()
+(defun select-roam-db ()
   (interactive)
+                  ;;personal use
   (let ((select '((me . roam)
+                 ;; with my friend
                   (share . loggg)
+                 ;; Obviously, for the homepage.
                   (homepage . POKE/Web/raedme/public/texts))))
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
     :require-match t
@@ -526,18 +561,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (map! :leader
       :desc "execute under the subtree"
       "d o" #'org-babel-execute-subtree)
-
-(setq easy-hugo-basedir "~/chiple.github.io/")
-(doom! :lang
-       (org +hugo))
-(use-package ox-hugo
-  :after ox)
-(setq easy-hugo-url "https://chiple.github.io")
-(setq easy-hugo-sshdomain "https://chiple.github.io")
-(setq easy-hugo-root "/")
-(setq easy-hugo-previewtime "300")
-(setq easy-hugo-postdir "content/post")
-(setq org-hugo-base-dir "~/chiple.github.io/")
 
 (defun display-list-of (what-to-find)
   (interactive)

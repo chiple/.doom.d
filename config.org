@@ -5,6 +5,7 @@
 I needs to write more "literal" part. And This config need to have the huge refactoring. From <2022-10-19 水>, I wanna cleanup all the unnecessary thing in this month. Look what happen...
 
 * Bookmarks
+The search for project which is likely to be as most frequently edited place for developer. But other things you are likely to visit secondly should also be accessed easily. For that case, I've just added key-binding for that.
 #+BEGIN_SRC emacs-lisp
 (map! :leader
       (:prefix ("b". "buffer")
@@ -14,6 +15,7 @@ I needs to write more "literal" part. And This config need to have the huge refa
 
 * utils
 For the extended syntax or frequent generic things are gathered here.
+Althought I place these here now, I'll put these in other file in this repository when the amount become huge.
 #+begin_src emacs-lisp :results output
 ;switch statement like in the javascript.
 ;or this name can be match using the name of the python.
@@ -35,11 +37,15 @@ For the extended syntax or frequent generic things are gathered here.
 #+RESULTS:
 
 * key-bindings
+Just making key-bindings for category
 ** org
 #+BEGIN_SRC emacs-lisp
 ;;not classified
+
 (map! (:leader
-  (:desc "gosh with splited window" "s h" (lambda () (interactive) (with-splited-window (run-scheme "")))
+  (:desc "gosh with splited window" "s h"
+   ;;this is for shell but that's gauche, not eshell.
+   (lambda () (interactive) (with-splited-window (run-scheme "")))
    :desc "zoom" "z z" #'+hydra/text-zoom/body
    :desc "org-table" "t o" #'org-table-create
    :desc "elgantt ""g n" #'elgantt-open
@@ -85,11 +91,14 @@ For the extended syntax or frequent generic things are gathered here.
 #+end_src
 
 ** text-edit
+The "kill-ring" is clipboard with circler data-structure. This is really useful.
+The key-binding is standing for "line-up" and "line-down". Sounds fair!!
 #+begin_src emacs-lisp
 (map! :leader
       :desc "heml kill ring"
       "k r" #'helm-show-kill-ring)
 
+;;switching text up and down.
 (defun move-line-up ()
   "Move up the current line."
   (interactive)
@@ -109,7 +118,8 @@ For the extended syntax or frequent generic things are gathered here.
       (:desc "line-swap-down" "l d"#'move-line-down
        :desc "line-swap-down" "l u"#'move-line-up)))
 #+end_src
-** operating somethign
+
+** Manual
 #+begin_src emacs-lisp
 (map! :leader
       :desc "man page"
@@ -117,8 +127,8 @@ For the extended syntax or frequent generic things are gathered here.
 #+end_src
 
 ** lisp
+Key-binding for lisp would be pretty much the operation for the parenthesis. This is also useful especially for other language which use parenthesis a lot.
 #+begin_src emacs-lisp
-(setq scheme-program-name "gosh -i")
 (map! :leader :desc "run sly" "a a" #'sly)
 
 (map! (:leader
@@ -132,6 +142,7 @@ For the extended syntax or frequent generic things are gathered here.
 : +default/search-other-project
 
 ** godot
+Currently, this is just for gdscript.el. When ~godoel~ is done, I'll put some key-bindings for that.
 #+begin_src emacs-lisp
 (map! :leader
       :desc  "hydra gd"
@@ -146,6 +157,7 @@ For the extended syntax or frequent generic things are gathered here.
       "l p"#'org-latex-preview)
 #+end_src
 ** w3m
+This is for browser in emacs ~w3m~.
 #+begin_src emacs-lisp
 (map! (:leader
        (:desc "down on google"
@@ -181,6 +193,7 @@ but I don't really wanna do this cause this just prove that I can't over write t
 
 
 * dashboard
+I'm just make the dashboard display agenda and links to the files that I'm recently editing.
 #+begin_src emacs-lisp
 (use-package dashboard
   :config
@@ -196,9 +209,8 @@ but I don't really wanna do this cause this just prove that I can't over write t
 (set-face-attribute 'default nil :height 200)
 #+end_src
 
-#+RESULTS:
-
 * Langs and Dev
+This is so boring now. Just declaration for the lsp.
 ** glsl-mode
 #+begin_src emacs-lisp
 (use-package! glsl-mode)
@@ -212,7 +224,12 @@ but I don't really wanna do this cause this just prove that I can't over write t
 *** auto
 #+begin_src emacs-lisp
 (setq lsp-auto-guess-root t)
+(global-ede-mode t)
 #+end_src
+
+#+RESULTS:
+: t
+
 *** gdscript-mode
 #+begin_src emacs-lisp
 (when (string-equal system-type "darwin")
@@ -233,12 +250,42 @@ but I don't really wanna do this cause this just prove that I can't over write t
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 #+end_src
-** shell
+
+*** typescript
 #+begin_src emacs-lisp
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+(add-hook 'typescript-mode-hook 'lsp-deferred)
+
+#+end_src
+
+
+*** dap
+
+#+begin_src emacs-lisp
+(use-package dap-mode
+  :custom
+  (dap-lldb-debug-program `("/Users/motchang/.vscode/extensions/lanza.lldb-vscode-0.2.2/bin/darwin/bin/lldb-vscode"))
+  :config
+  (dap-mode 1)
+  (dap-tooltip-mode 1)
+  (require 'dap-lldb)
+  (use-package dap-ui
+      :ensure nil
+      :config
+      (dap-ui-mode 1)))
+  (require 'dap-node)
+(defun my-setup-dap-node ()
+  "Require dap-node feature and run dap-node-setup if VSCode module isn't already installed"
+  (unless (file-exists-p dap-node-debug-path) (dap-node-setup)))
+(add-hook 'typescript-mode-hook 'my-setup-dap-node)
+#+end_src
+
+** shell
+Just reading the enviroment valuable in .bashrc, bash_profile.
+#+begin_src emacs-lisp
+  (exec-path-from-shell-initialize)
 #+end_src
 ** key-bind
+Maybe I should use dumb-jump, But it's okay, it's working...
 #+begin_src emacs-lisp
 (defun mark-and-find-definition ()
   (interactive)
@@ -251,6 +298,21 @@ but I don't really wanna do this cause this just prove that I can't over write t
 
 
 * LISP
+setup for multiple lisp.
+** SCHEME
+Just gauche.
+#+begin_src emacs-lisp
+(setq geiser-gauche-binary "/usr/bin/gosh")
+(setq scheme-program-name "gosh -i")
+(setq geiser-active-implementations '(guile gauche))
+(use-package geiser-gauche
+  :after geiser
+  :init (add-to-list 'geiser-active-implementations 'gauche))
+#+end_src
+
+#+RESULTS:
+: geiser-gauche
+
 ** RACKET
 #+begin_src emacs-lisp
 (add-hook 'racket-mode-hook
@@ -263,6 +325,7 @@ but I don't really wanna do this cause this just prove that I can't over write t
 #+BEGIN_SRC emacs-lisp
 (use-package sly)
 #+END_SRC
+
 
 *** COCONUT
 #+begin_src emacs-lisp
@@ -277,7 +340,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
 * Org
 ** general
 #+begin_src emacs-lisp
-
 (defun head-add ()
   (interactive)
   (with-current-buffer
@@ -445,8 +507,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 
 **** circler
+Circle is tiny little software which reads the code progression written in plain text.
+The field separator is pipe ~|~; the result is the view of the openGL.
 #+begin_src emacs-lisp
-
 (setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
 
 (defun org-babel-execute:circler (body _)
@@ -459,12 +522,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
     (with-temp-file filename
       (insert body))
       (org-babel-eval cmd body)))
-
-
 #+end_src
 
 
 ** org-roam
+Org roam is package for personal(or you can make something with you friends), knowledge pages(wiki).
+I just put the template for each wiki below. And my homepage is using snippet here, just taking advantage of the commands of the package to obtain the information of the graph of my articles.
 *** org-roam-capture-template
 #+begin_src emacs-lisp
 (after! org-roam
@@ -536,15 +599,15 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+end_src
 
-#+RESULTS:
-| (lambda nil (write-to (get-today-file))) | create-node-and-link-json | org-roam-capture--insert-captured-ref-h |
-
 *** dir-option
 #+begin_src emacs-lisp
-(defun inuru ()
+(defun select-roam-db ()
   (interactive)
+                  ;;personal use
   (let ((select '((me . roam)
+                 ;; with my friend
                   (share . loggg)
+                 ;; Obviously, for the homepage.
                   (homepage . POKE/Web/raedme/public/texts))))
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
     :require-match t
@@ -554,11 +617,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (org-roam-db-sync))
 #+end_src
 
-#+RESULTS:
-: inuru
 
 *** org-roam-ui
-
+Just for org-roam-ui, completely same as the readme of the org-roam-ui. Just boring.
 #+begin_src emacs-lisp
 (setq org-roam-directory "~/Dropbox/roam")
 (use-package org-roam-bibtex
@@ -585,6 +646,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+END_SRC
 *** org-roam-dialies
+Templates for my dailies.
 #+begin_src emacs-lisp
 (setq org-roam-dailies-directory "~/Dropbox/roam/journal")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -652,6 +714,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 #+end_src
 
 ** reading
+Commands for code reading. I borrow the sneppet from ladicle's one.
 #+begin_src emacs-lisp
 (defconst ladicle/org-journal-dir "~/roam/journal/")
 (defconst ladicle/org-journal-file-format (concat ladicle/org-journal-dir "%Y%m%d.org"))
@@ -715,6 +778,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 
 ** babel
+For org-babel, I just wanna make it look surrounded on the left side. The overlay of the ~org-modern~ is not my taste, so I've disabled the functionality partially.
 #+begin_src emacs-lisp
 (use-package org-modern-indent
   ;; :straight or :load-path here, to taste
@@ -735,27 +799,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       "d o" #'org-babel-execute-subtree)
 #+end_src
 
-** publish
-#+begin_src emacs-lisp
-(setq easy-hugo-basedir "~/chiple.github.io/")
-(doom! :lang
-       (org +hugo))
-(use-package ox-hugo
-  :after ox)
-(setq easy-hugo-url "https://chiple.github.io")
-(setq easy-hugo-sshdomain "https://chiple.github.io")
-(setq easy-hugo-root "/")
-(setq easy-hugo-previewtime "300")
-(setq easy-hugo-postdir "content/post")
-(setq org-hugo-base-dir "~/chiple.github.io/")
-#+end_src
-
-
 ** org-benrify
 *** To search each headlines
+When editting ~.org~ file, I often search that using pattern matching like with this ~*~, then move back and forth. But I've make the list of the headline in the floating window using ~ivy~.
 Go to the headiline point as the top of the screen.
 #+begin_src emacs-lisp
-
 (defun display-list-of (what-to-find)
   (interactive)
   (defun get-existing-heading-in-buffer ()
@@ -784,7 +832,9 @@ Go to the headiline point as the top of the screen.
 
 
 ** tempo
+shortcut for babel, using tab key to complete to the cons things below.
 Just shoutcut keywords for src-block. I really want to add the =:results output= as the default.
+
 #+begin_src emacs-lisp
 (require 'org-tempo)
 (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
