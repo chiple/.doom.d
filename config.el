@@ -19,6 +19,8 @@
      (+evil/window-move-right)
      ,body))
 
+(add-to-list 'load-path "/home/ryu/.emacs.d/.local/straight/repos/dash.el")
+
 ;;not classified
 
 (map! (:leader
@@ -50,6 +52,10 @@
 (map! :leader
       :desc "imenu-list"
       "l e" #'imenu-list-smart-toggle)
+(map! :leader
+      :desc "suspend emacs"
+      "e x" #'suspend-emacs)
+
 ;;visual line of numbers ではない
 
 (map! (:leader
@@ -106,8 +112,11 @@
         "o g" #'(lambda ()
                   (interactive)
                   (let ((search-word (read-string "google:: ")))
-                    (with-splited-window
-                     (w3m-search "google" search-word)))))
+                    (if (equal (buffer-name (current-buffer)) "*w3m*")
+
+                      (w3m-search "google" search-word)
+                      (with-splited-window
+                         (w3m-search "google" search-word))))))
        (:desc "open the link in the org file
 but I don't really wanna do this cause this just prove that I can't over write the <return> key."
         "o o" #'(lambda ()
@@ -141,10 +150,12 @@ but I don't really wanna do this cause this just prove that I can't over write t
   '(doom-dashboard-footer-icon :inherit all-the-icons-red)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
-(set-face-attribute 'default nil :height 200)
+(set-face-attribute 'default nil :height 120)
 
 (use-package! glsl-mode)
 (add-to-list 'auto-mode-alist '("\\.gdshader\\'" . glsl-mode))
+
+(setq ob-mermaid-cli-path "/usr/bin/mmdc")
 
 (setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
 
@@ -170,6 +181,7 @@ but I don't really wanna do this cause this just prove that I can't over write t
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 
 (add-hook 'typescript-mode-hook 'lsp-deferred)
+(load-file "~/addhook/ob-typescript/ob-typescript.el")
 
 (use-package dap-mode
   :custom
@@ -225,6 +237,20 @@ but I don't really wanna do this cause this just prove that I can't over write t
 
 (map! :leader
       :desc "don't wanna write * again and again" "h h" #'head-add)
+
+;;Just inserting link not completing the link section whole. Cuase I don't know how to access the clipboard from emacs.
+(defun link-easer ()
+  (interactive)
+  (insert
+   (format "[[][%s]]" (read-string "what is the title >")))
+  (with-current-buffer (current-buffer)
+    (re-search-backward "\\[\\]")
+    )
+  )
+
+(map! :leader
+      :desc "inserting link"
+      "l n"#'link-easer)
 
 (require 'org-habit)
 
@@ -337,17 +363,37 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(lisp . t)
  '(awk . t)
  '(bash . t)
+ '(mermaid . t)
  '(python . t)
  '(haskell. t)
  '(C++ . t)
  '(dot . t)
  '(js . t)
+ '(typescript . t)
  '(ditaa . t)
  '(plantuml. t)
  '(lilypond. t)
  '(rust . t)
  '(gnuplot . t)
  )
+
+(defun org-babel-execute:typescript (body params)
+  (org-babel-execute:js
+   (with-temp-buffer
+     (let* ((ts-file (concat (temporary-file-directory) (make-temp-name "script") ".ts"))
+            (js-file (replace-regexp-in-string ".ts$" ".js" ts-file)))
+       (insert body)
+       (write-region nil nil ts-file)
+       (call-process-shell-command (concat "npx tsc " (shell-quote-argument ts-file)))
+       (delete-region (point-min) (point-max))
+       (insert-file js-file)
+       (let ((js-source (buffer-substring (point-min) (point-max))))
+         (delete-file ts-file)
+         (delete-file js-file)
+         js-source)))
+   params))
+
+(defalias 'org-babel-execute:ts 'org-babel-execute:typescript)
 
 (setq org-babel-circler-excutebale "~/edu/clang/painting/unko")
 
@@ -436,7 +482,8 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                  ;; with my friend
                   (share . loggg)
                  ;; Obviously, for the homepage.
-                  (homepage . POKE/Web/raedme/public/texts))))
+                  (homepage . homepagr/raedme/public/texts))))
+
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
     :require-match t
     :action (lambda (choice)
@@ -591,6 +638,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (add-to-list 'org-structure-template-alist '("ba" . "src bash"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
 (add-to-list 'org-structure-template-alist '("js" . "src js"))
 (add-to-list 'org-structure-template-alist '("circler" . "src circler"))
@@ -1136,6 +1184,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (set-language-environment "Japanese")
 (map! :leader
+      :desc "convert to katakana" "k n" #'japanese-katakana-region
       :desc "switch to japanese" "j a" #'(lambda () (interactive) (set-input-method "japanese"))
       :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
 

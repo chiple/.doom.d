@@ -32,6 +32,8 @@ Althought I place these here now, I'll put these in other file in this repositor
      (+evil-window-vsplit-a)
      (+evil/window-move-right)
      ,body))
+
+(add-to-list 'load-path "/home/ryu/.emacs.d/.local/straight/repos/dash.el")
 #+end_src
 
 #+RESULTS:
@@ -75,12 +77,15 @@ Just making key-bindings for category
 (map! :leader
       :desc "imenu-list"
       "l e" #'imenu-list-smart-toggle)
+(map! :leader
+      :desc "suspend emacs"
+      "e x" #'suspend-emacs)
+
 ;;visual line of numbers ではない
 #+end_src
 
 #+RESULTS:
 : imenu-list-smart-toggle
-
 
 ** snippet
 #+begin_src emacs-lisp
@@ -164,8 +169,11 @@ This is for browser in emacs ~w3m~.
         "o g" #'(lambda ()
                   (interactive)
                   (let ((search-word (read-string "google:: ")))
-                    (with-splited-window
-                     (w3m-search "google" search-word)))))
+                    (if (equal (buffer-name (current-buffer)) "*w3m*")
+
+                      (w3m-search "google" search-word)
+                      (with-splited-window
+                         (w3m-search "google" search-word))))))
        (:desc "open the link in the org file
 but I don't really wanna do this cause this just prove that I can't over write the <return> key."
         "o o" #'(lambda ()
@@ -191,6 +199,9 @@ but I don't really wanna do this cause this just prove that I can't over write t
 
 #+end_src
 
+#+RESULTS:
+: +default/search-other-project
+
 
 * dashboard
 I'm just make the dashboard display agenda and links to the files that I'm recently editing.
@@ -206,8 +217,10 @@ I'm just make the dashboard display agenda and links to the files that I'm recen
   '(doom-dashboard-footer-icon :inherit all-the-icons-red)
   '(doom-dashboard-menu-desc :inherit font-lock-string-face)
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
-(set-face-attribute 'default nil :height 200)
+(set-face-attribute 'default nil :height 120)
 #+end_src
+
+#+RESULTS:
 
 * Langs and Dev
 This is so boring now. Just declaration for the lsp.
@@ -216,6 +229,12 @@ This is so boring now. Just declaration for the lsp.
 (use-package! glsl-mode)
 (add-to-list 'auto-mode-alist '("\\.gdshader\\'" . glsl-mode))
 #+end_src
+** mermaid
+#+begin_src emacs-lisp
+(setq ob-mermaid-cli-path "/usr/bin/mmdc")
+
+#+end_src
+
 ** plantuml
 #+begin_src emacs-lisp
 (setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
@@ -252,10 +271,12 @@ This is so boring now. Just declaration for the lsp.
 #+end_src
 
 *** typescript
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results silent
 (add-hook 'typescript-mode-hook 'lsp-deferred)
-
+(load-file "~/addhook/ob-typescript/ob-typescript.el")
 #+end_src
+
+#+RESULTS:
 
 
 *** dap
@@ -348,13 +369,31 @@ Just gauche.
 
 (map! :leader
       :desc "don't wanna write * again and again" "h h" #'head-add)
+
+;;Just inserting link not completing the link section whole. Cuase I don't know how to access the clipboard from emacs.
+(defun link-easer ()
+  (interactive)
+  (insert
+   (format "[[][%s]]" (read-string "what is the title >")))
+  (with-current-buffer (current-buffer)
+    (re-search-backward "\\[\\]")
+    )
+  )
+
+(map! :leader
+      :desc "inserting link"
+      "l n"#'link-easer)
+
 #+end_src
 
+#+RESULTS:
+: link-easer
 
 ** habit
 #+begin_src emacs-lisp
 (require 'org-habit)
 #+end_src
+
 ** Directory
 #+BEGIN_SRC emacs-lisp
 (when (string-equal system-type "darwin")
@@ -491,11 +530,13 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(lisp . t)
  '(awk . t)
  '(bash . t)
+ '(mermaid . t)
  '(python . t)
  '(haskell. t)
  '(C++ . t)
  '(dot . t)
  '(js . t)
+ '(typescript . t)
  '(ditaa . t)
  '(plantuml. t)
  '(lilypond. t)
@@ -505,6 +546,34 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 #+end_src
 
+**** TODO typescript
+https://github.com/lurdan/ob-typescript
+の DEMO がうまく動作せず、
+https://www.reddit.com/r/emacs/comments/b7rsxu/behold_orgbabelexecutetypescript/
+で、トランスパイルを/tmp/でやろうとしている人がいて、うごいてなかった（ふつうに =npx tsc= が失敗している）のをみて、とりあえず、実行ごとに typescript をいれるだけしている（めちゃくちゃおそい）
+
+#+begin_src emacs-lisp
+
+(defun org-babel-execute:typescript (body params)
+  (org-babel-execute:js
+   (with-temp-buffer
+     (let* ((ts-file (concat (temporary-file-directory) (make-temp-name "script") ".ts"))
+            (js-file (replace-regexp-in-string ".ts$" ".js" ts-file)))
+       (insert body)
+       (write-region nil nil ts-file)
+       (call-process-shell-command (concat "npx tsc " (shell-quote-argument ts-file)))
+       (delete-region (point-min) (point-max))
+       (insert-file js-file)
+       (let ((js-source (buffer-substring (point-min) (point-max))))
+         (delete-file ts-file)
+         (delete-file js-file)
+         js-source)))
+   params))
+
+(defalias 'org-babel-execute:ts 'org-babel-execute:typescript)
+#+end_src
+
+#+RESULTS:
 
 **** circler
 Circle is tiny little software which reads the code progression written in plain text.
@@ -608,7 +677,8 @@ I just put the template for each wiki below. And my homepage is using snippet he
                  ;; with my friend
                   (share . loggg)
                  ;; Obviously, for the homepage.
-                  (homepage . POKE/Web/raedme/public/texts))))
+                  (homepage . homepagr/raedme/public/texts))))
+
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
     :require-match t
     :action (lambda (choice)
@@ -616,6 +686,9 @@ I just put the template for each wiki below. And my homepage is using snippet he
                                                (symbol-name (cdr choice)))))))
   (org-roam-db-sync))
 #+end_src
+
+#+RESULTS:
+: select-roam-db
 
 
 *** org-roam-ui
@@ -845,11 +918,15 @@ Just shoutcut keywords for src-block. I really want to add the =:results output=
 (add-to-list 'org-structure-template-alist '("ba" . "src bash"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
 (add-to-list 'org-structure-template-alist '("js" . "src js"))
 (add-to-list 'org-structure-template-alist '("circler" . "src circler"))
 (add-to-list 'org-structure-template-alist '("lil" . "src lilypond"))
 #+end_src
+
+#+RESULTS:
+: ((ts . src typescript) (hs . src ts) (lil . src lilypond) (circler . src circler) (js . src js) (pl . src plantuml) (hs . src haskell) (py . src python) (ba . src bash) (aw . src awk) (cl . src lisp) (cc . src C) (ru . src rust) (el . src emacs-lisp) (a . export ascii) (c . center) (C . comment) (e . example) (E . export) (h . export html) (l . export latex) (q . quote) (s . src) (v . verse))
 
 ** capture
 #+begin_src emacs-lisp
@@ -1487,6 +1564,7 @@ utils for using window. I think this is a bit not categorized well
 #+begin_src emacs-lisp
 (set-language-environment "Japanese")
 (map! :leader
+      :desc "convert to katakana" "k n" #'japanese-katakana-region
       :desc "switch to japanese" "j a" #'(lambda () (interactive) (set-input-method "japanese"))
       :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
 
@@ -1498,6 +1576,9 @@ utils for using window. I think this is a bit not categorized well
     (delete-region start end)
     (insert (shell-command-to-string (concat "python ~/tools/hiragana_katakana.py " region)))))
 #+end_src
+
+#+RESULTS:
+: hira-kata
 
 * calender
 #+begin_src emacs-lisp
