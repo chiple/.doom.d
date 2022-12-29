@@ -1055,18 +1055,34 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 (setq atco-dir "~/competi/")
 (defun atco ()
   (interactive)
-  (let ((contestname))
-    (setq contestname(read-string "contest num>> "))
-    (f-mkdir-full-path (concat atco-dir contestname))
-    (shell-command (concat "cd " (concat atco-dir contestname) "&& acc new " contestname))))
+  (let ((competi-buffer (get-buffer-create "*atcoder*"))
+        (contest-name (read-string "Fill in contest name>> ")))
+    (with-splited-window (shell "atcoder"))
+    (comint-send-string (get-process "atcoder") (format "cd %s && acc new %s\n" atco-dir contest-name))
+    ;;(comint-send-input (get-process "shell") "a")
+    )
+  )
 
 
 (defun test-atco ()
   (interactive)
-  (let ((exp (cadr (split-string (buffer-file-name (current-buffer)) "\\.")) ))
-    (compile (cond
-   ((equal exp "py") "oj t -c \"python3 ./main.py\" -d ./test/")
-   ((equal exp "lisp") "oj t -c \"sbcl --script ./main.lisp\" -d ./test/")))))
+  (let ((exp (cadr (split-string (buffer-file-name (current-buffer)) "\\.")) )
+        (file-with-fullpath buffer-file-name)
+        (cwd (helm-basedir (buffer-file-name)))
+        )
+
+    (if
+        (member "atcoder" (mapcar #'buffer-name (mapcar #'window-buffer (window-list))))
+        (evil-window-right 1)
+      (with-splited-window (shell "atcoder"))
+      )
+
+    (comint-send-string (get-process "atcoder")
+                        (cond
+                         ((equal exp "py")
+                          (format "oj t -c \"python3 %s\" -d %s/tests/\n"  file-with-fullpath cwd))
+                         ((equal exp "lisp") (format "oj t -c \"sbcl --script %s/main.lisp\" -d %stests/\n" (pwd) (pwd)))
+                         ))))
 
 
 (defun submit-atco()
