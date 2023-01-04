@@ -140,6 +140,7 @@ Key-binding for lisp would be pretty much the operation for the parenthesis. Thi
        (:desc "sexp-forward" "s x f" #'sp-forward-sexp
         :desc "sexp-backward" "s x b" #'sp-backward-sexp
         :desc "sexp-kill" "s x d" #'sp-kill-sexp
+        :desc "sexp-copy" "s x y" #'sp-copy-sexp
         :desc "sexp-kill" "s x s" #'+default/search-other-project)))
 #+end_src
 
@@ -543,7 +544,6 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
  '(rust . t)
  '(gnuplot . t)
  )
-
 #+end_src
 
 **** TODO typescript
@@ -672,18 +672,18 @@ I just put the template for each wiki below. And my homepage is using snippet he
 #+begin_src emacs-lisp
 (defun select-roam-db ()
   (interactive)
-                  ;;personal use
+  ;;personal use
   (let ((select '((me . roam)
-                 ;; with my friend
+                  ;; with my friend
                   (share . loggg)
-                 ;; Obviously, for the homepage.
+                  ;; Obviously, for the homepage.
                   (homepage . homepagr/raedme/public/texts))))
 
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
-    :require-match t
-    :action (lambda (choice)
-              (setq org-roam-directory (concat "~/Dropbox/"
-                                               (symbol-name (cdr choice)))))))
+              :require-match t
+              :action (lambda (choice)
+                        (setq org-roam-directory (concat "~/Dropbox/"
+                                                         (symbol-name (cdr choice)))))))
   (org-roam-db-sync))
 #+end_src
 
@@ -1494,17 +1494,33 @@ For displaying the gif on the emacs.
 
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
+
+(defun shell-command-existp (command)
+  (cl-case (shell-command
+            (format "command -v %s" command))
+    (0 't)
+    (1 'nil)
+    ))
+
 (defun read-book-with-chrome ()
   (interactive)
-  (ivy-read "books to read> "
-            (split-string (shell-command-to-string "cd ~/Dropbox/books && ls") "\n")
-            :require-match t
-            :action (lambda (choice) (shell-command (concat "google-chrome-stable ~/Dropbox/books/" choice)))))
+  (let* ((browser-candidate
+          '("google-chrome-stable" "chromium"))
+
+    (browser-to-use (car (cl-remove-if #'null (-map (lambda (c) (when (shell-command-existp c) c)) browser-candidate)))))
+
+    (ivy-read "books to read> "
+              (split-string (shell-command-to-string "cd ~/Dropbox/books && ls") "\n")
+              :require-match t
+              :action (lambda (choice) (shell-command (concat (format "%s ~/Dropbox/books/" browser-to-use) (format "\"%s\"" choice)))))))
 
 (map! :leader
       :desc "using chrome, reading things, If the nyxt gets better I would use that."
       "b o" #'read-book-with-chrome)
 #+end_src
+
+#+RESULTS:
+: read-book-with-chrome
 
 
 * misc
@@ -1515,6 +1531,7 @@ uncategorized
 ;;(setq doom-modeline-mode 'nil)
 ;;(load-file "~/Dropbox/POKE/Elisp/pokel.el")
 ;;(setq pokel-mode t)
+(load "~/Dropbox/POKE/Elisp/musica.el")
 #+end_src
 
 #+RESULTS:

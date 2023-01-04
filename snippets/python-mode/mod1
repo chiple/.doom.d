@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: modie
+# key: mod1
+# condition: t
+# --
+mod = 1000000007

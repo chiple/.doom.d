@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: just-one-digit
+# key: seisuu
+# condition: t
+# --
+N = int(input())

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: get-keta
+# uuid:
+# key: getketa
+# condition: t
+# --
+keta = len(str(int))

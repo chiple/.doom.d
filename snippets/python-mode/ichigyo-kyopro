@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: ichigyo-kyopro
+# uuid:
+# key: ichigyo
+# condition: t
+# --
+
+H = list(map(int, input().split()))
