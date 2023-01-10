@@ -1379,7 +1379,45 @@ Just shoutcut keywords for src-block. I really want to add the =:results output=
                (file +org-capture-journal-file)
                "* %?\n" :prepend t))
 #+end_src
+* おべんきょ
+#+begin_src emacs-lisp
+(defun shellgei ()
+  (interactive)
+  (let* ((-dir "~/shellgei160/")
+         (qdata
+          (-map (lambda (cand) (and (f-directory-p cand)
+                                    (list cand (helm-list-directory cand))))
+                (helm-list-directory (format "%sqdata" -dir))))
+         (answer
+          (-map (lambda (cand)
+                  (format "%sanswer/%s.md" -dir (and (stringp (car cand))
+                                                     (helm-basename (car cand)))))
+                qdata)))
+    (print answer)
+    (ivy-read "mondai> "
+              qdata
+              :action (lambda (choice)
+                        (progn
+                          (setq current-question
+                                (list
+                                 choice (nth (cl-position choice qdata) answer)))
+                          (dired (car choice)))))
+    )
+  )
 
+(defun shellgei-back-and-forth ()
+  (interactive)
+  (if (string-match-p "qdata" (helm-current-directory))
+      (dired (car (last current-question)))
+    (find-file (caar current-question))
+    ))
+
+(map! :leader
+      :desc "just navigation" "s g g" #'shellgei
+      :desc "go to answer or question" "s g n" #'shellgei-back-and-forth
+      )
+
+#+end_src
 
 ** competitive
 #+begin_src emacs-lisp
@@ -1529,7 +1567,7 @@ uncategorized
 ;(use-package nyan-mode)
 ;(setq nyan-mode t)
 ;;(setq doom-modeline-mode 'nil)
-;;(load-file "~/Dropbox/POKE/Elisp/pokel.el")
+(load-file "~/Dropbox/POKE/Elisp/pokel.el")
 ;;(setq pokel-mode t)
 (load "~/Dropbox/POKE/Elisp/musica.el")
 #+end_src
@@ -1605,6 +1643,7 @@ utils for using window. I think this is a bit not categorized well
       :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
 
 (load "~/Projects/emacs/deepl.el")
+(load "~/Projects/emacs/gpt.el")
 
 (defun hira-kata (start end)
   (interactive "r")

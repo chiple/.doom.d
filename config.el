@@ -97,6 +97,7 @@
        (:desc "sexp-forward" "s x f" #'sp-forward-sexp
         :desc "sexp-backward" "s x b" #'sp-backward-sexp
         :desc "sexp-kill" "s x d" #'sp-kill-sexp
+        :desc "sexp-copy" "s x y" #'sp-copy-sexp
         :desc "sexp-kill" "s x s" #'+default/search-other-project)))
 
 (map! :leader
@@ -477,18 +478,18 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (defun select-roam-db ()
   (interactive)
-                  ;;personal use
+  ;;personal use
   (let ((select '((me . roam)
-                 ;; with my friend
+                  ;; with my friend
                   (share . loggg)
-                 ;; Obviously, for the homepage.
+                  ;; Obviously, for the homepage.
                   (homepage . homepagr/raedme/public/texts))))
 
     (ivy-read "🐕🐕どのwikiにするか🐕🐕" select
-    :require-match t
-    :action (lambda (choice)
-              (setq org-roam-directory (concat "~/Dropbox/"
-                                               (symbol-name (cdr choice)))))))
+              :require-match t
+              :action (lambda (choice)
+                        (setq org-roam-directory (concat "~/Dropbox/"
+                                                         (symbol-name (cdr choice)))))))
   (org-roam-db-sync))
 
 (setq org-roam-dailies-directory "~/Dropbox/roam/journal")
@@ -1051,6 +1052,42 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                (file +org-capture-journal-file)
                "* %?\n" :prepend t))
 
+(defun shellgei ()
+  (interactive)
+  (let* ((-dir "~/shellgei160/")
+         (qdata
+          (-map (lambda (cand) (and (f-directory-p cand)
+                                    (list cand (helm-list-directory cand))))
+                (helm-list-directory (format "%sqdata" -dir))))
+         (answer
+          (-map (lambda (cand)
+                  (format "%sanswer/%s.md" -dir (and (stringp (car cand))
+                                                     (helm-basename (car cand)))))
+                qdata)))
+    (print answer)
+    (ivy-read "mondai> "
+              qdata
+              :action (lambda (choice)
+                        (progn
+                          (setq current-question
+                                (list
+                                 choice (nth (cl-position choice qdata) answer)))
+                          (dired (car choice)))))
+    )
+  )
+
+(defun shellgei-back-and-forth ()
+  (interactive)
+  (if (string-match-p "qdata" (helm-current-directory))
+      (dired (car (last current-question)))
+    (find-file (caar current-question))
+    ))
+
+(map! :leader
+      :desc "just navigation" "s g g" #'shellgei
+      :desc "go to answer or question" "s g n" #'shellgei-back-and-forth
+      )
+
 (use-package ob)
 (setq atco-dir "~/competi/")
 (defun atco ()
@@ -1142,12 +1179,25 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 
 (setq gdscript-docs-local-path "~/sites/godot/")
 (setq org-roam-directory "~/Dropbox/roam")
+
+(defun shell-command-existp (command)
+  (cl-case (shell-command
+            (format "command -v %s" command))
+    (0 't)
+    (1 'nil)
+    ))
+
 (defun read-book-with-chrome ()
   (interactive)
-  (ivy-read "books to read> "
-            (split-string (shell-command-to-string "cd ~/Dropbox/books && ls") "\n")
-            :require-match t
-            :action (lambda (choice) (shell-command (concat "google-chrome-stable ~/Dropbox/books/" choice)))))
+  (let* ((browser-candidate
+          '("google-chrome-stable" "chromium"))
+
+    (browser-to-use (car (cl-remove-if #'null (-map (lambda (c) (when (shell-command-existp c) c)) browser-candidate)))))
+
+    (ivy-read "books to read> "
+              (split-string (shell-command-to-string "cd ~/Dropbox/books && ls") "\n")
+              :require-match t
+              :action (lambda (choice) (shell-command (concat (format "%s ~/Dropbox/books/" browser-to-use) (format "\"%s\"" choice)))))))
 
 (map! :leader
       :desc "using chrome, reading things, If the nyxt gets better I would use that."
@@ -1156,8 +1206,9 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
 ;(use-package nyan-mode)
 ;(setq nyan-mode t)
 ;;(setq doom-modeline-mode 'nil)
-;;(load-file "~/Dropbox/POKE/Elisp/pokel.el")
+(load-file "~/Dropbox/POKE/Elisp/pokel.el")
 ;;(setq pokel-mode t)
+(load "~/Dropbox/POKE/Elisp/musica.el")
 
 (map! (:leader
        :desc "git commit after stageing" "g c s"
@@ -1205,6 +1256,7 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       :desc "switch to english" "e n" #'(lambda () (interactive) (set-input-method "ucs")))
 
 (load "~/Projects/emacs/deepl.el")
+(load "~/Projects/emacs/gpt.el")
 
 (defun hira-kata (start end)
   (interactive "r")
