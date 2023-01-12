@@ -1052,6 +1052,32 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                (file +org-capture-journal-file)
                "* %?\n" :prepend t))
 
+(defun create-unicage-dir (app-name base-dir)
+  (let ((unicage-dir (list "LOG"
+                           '(NENDAI "CGI" "HTML"
+                                    "INPUT" (TUIDE "UNKO")))))
+    (f-mkdir app-name)
+    (cl-labels ((rec (dir cur)
+                     (cond
+                      ((null dir) (ignore)) ;base case for the end
+                      ((stringp (car dir))
+                       (progn (f-mkdir (format "%s/%s" cur (car dir)))
+                              (rec (cdr dir) cur)))
+                      ((listp
+                        (car dir))
+                       (if (symbolp (caar dir))
+                           (progn (f-mkdir (format "%s/%s" cur (caar dir)))
+                                  (rec (cdar dir) (format "%s/%s"
+                                                          cur
+                                                          (symbol-name (caar dir)))))
+                         (print (car dir))))
+                      )
+                     ))
+      (rec unicage-dir app-name)
+      )
+    ))
+
+
 (defun shellgei ()
   (interactive)
   (let* ((-dir "~/shellgei160/")
@@ -1263,6 +1289,11 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (let ((region (buffer-substring start end)))
     (delete-region start end)
     (insert (shell-command-to-string (concat "python ~/tools/hiragana_katakana.py " region)))))
+
+(setq auto-mode-alist
+      (append '(("\\.cgi$" . shell-script-mode))
+              auto-mode-alist)
+      )
 
 (defun my-open-calendar ()
   (interactive)
