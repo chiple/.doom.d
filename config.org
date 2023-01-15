@@ -841,6 +841,37 @@ Commands for code reading. I borrow the sneppet from ladicle's one.
          "%A"
          :immediate-finish t))
 
+(defun cond-url ()
+  """depending on the content of (car kill-ring)
+burf the content I wanna place in journal"""
+  (interactive)
+  (let* ((url-lst
+          (cl-remove-if (lambda (txt) (string= txt ""))
+                        (split-string
+                         (car kill-ring)
+                         "/")
+                        ))
+         (domain (cadr url-lst))
+         (author-repo (cddr url-lst))
+         (author (nth 0 author-repo))
+         (repo (car (last  author-repo)))
+         (lasto (car (last url-lst))))
+    (switch domain
+            ("github.com"
+             (insert (format "(package! %s
+  :recipe (:host github :repo \"%s\"))"
+                             repo (concat author  "/" repo))))
+            ("www.youtube.com"
+             (insert
+              (shell-command-to-string
+               (format "python3 ~/Dropbox/POKE/Web/youtube-sub.py %s"
+                       (and (string-match "v=\\(.*\\)$" lasto)
+                            (match-string 1 lasto))))
+              ))
+            )
+    )
+  )
+
 ;;keybinding
 (map! (:leader
       (:desc "counsel capture" "c p" #'counsel-org-capture
@@ -848,6 +879,9 @@ Commands for code reading. I borrow the sneppet from ladicle's one.
       "y c" #'org-code-capture--store-here)))
 
 #+end_src
+
+#+RESULTS:
+: org-code-capture--store-here
 
 
 ** babel
@@ -1379,15 +1413,16 @@ Just shoutcut keywords for src-block. I really want to add the =:results output=
                (file +org-capture-journal-file)
                "* %?\n" :prepend t))
 #+end_src
-
 * おべんきょ
 ユニケージの教科書の勉強ついでにつくったのとか。
 shellgei 160 のとか。
 #+begin_src emacs-lisp
-(defun create-unicage-dir (app-name base-dir)
+(defun create-unicage-dir ()
+  (interactive)
   (let ((unicage-dir (list "LOG"
                            '(NENDAI "CGI" "HTML"
-                                    "INPUT" (TUIDE "UNKO")))))
+                                    "INPUT" (TUIDE "UNKO"))))
+        (app-name (read-string "APP NAME> ")))
     (f-mkdir app-name)
     (cl-labels ((rec (dir cur)
                      (cond
@@ -1447,6 +1482,9 @@ shellgei 160 のとか。
       )
 
 #+end_src
+
+#+RESULTS:
+: shellgei-back-and-forth
 
 ** competitive
 #+begin_src emacs-lisp

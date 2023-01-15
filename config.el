@@ -586,6 +586,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          "%A"
          :immediate-finish t))
 
+(defmacro sub-youtube (id)
+  """get subtitle of youtube video just with url.
+cause the parameter can also be symbol, I waana take
+symbol itself. that's why this is macro """
+  (let* ((url-string (symbol-name id))
+         (id (and (string-match "v=\\(.*\\)$" url-string)
+                  (match-string 1 url-string))))
+   (print
+    (shell-command-to-string
+     (format "python3 ~/Dropbox/POKE/Web/youtube-sub.py %s"
+             id)))
+    )
+  )
+
 ;;keybinding
 (map! (:leader
       (:desc "counsel capture" "c p" #'counsel-org-capture
@@ -1052,10 +1066,12 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
                (file +org-capture-journal-file)
                "* %?\n" :prepend t))
 
-(defun create-unicage-dir (app-name base-dir)
+(defun create-unicage-dir ()
+  (interactive)
   (let ((unicage-dir (list "LOG"
                            '(NENDAI "CGI" "HTML"
-                                    "INPUT" (TUIDE "UNKO")))))
+                                    "INPUT" (TUIDE "UNKO"))))
+        (app-name (read-string "APP NAME> ")))
     (f-mkdir app-name)
     (cl-labels ((rec (dir cur)
                      (cond

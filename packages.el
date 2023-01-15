@@ -107,6 +107,7 @@
 (package! ob-lilypond
   :recipe (:host github :repo "mjago/ob-lilypond"))
 
+
 (package! emacs-easy-hugo
   :recipe (:host github :repo "masasam/emacs-easy-hugo"))
 
@@ -121,6 +122,9 @@
 
 (package! nyan-mode
   :recipe (:host github :repo "TeMPOral/nyan-mode"))
+
+(package! cort.el
+  :recipe (:host github :repo "conao3/cort.el"))
 
 (package! nov.el
   :recipe (:host github :repo "wasamasa/nov.el"))
