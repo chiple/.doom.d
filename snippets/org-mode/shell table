@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: shell table
+# uuid:
+# key: shtb
+# condition: t
+# --
+#+NAME: table
+|   |   |   |   |   |
+|---+---+---+---+---|
+|   |   |   |   |   |
+
+
+#+HEADER: :stdin table
+#+begin_src bash
+cat $table
+#+end_src

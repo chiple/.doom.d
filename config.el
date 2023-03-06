@@ -1,3 +1,5 @@
+(setq user-full-name "Yamamoto Ryuji")
+
 (map! :leader
       (:prefix ("b". "buffer")
        :desc "List bookmarks" "L" #'list-bookmarks
@@ -153,12 +155,68 @@ but I don't really wanna do this cause this just prove that I can't over write t
   '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
 (set-face-attribute 'default nil :height 120)
 
+(map! (:leader
+       (:desc "run zig" "z g r" #'zig-run)
+       (:desc "run zig" "z g t" #'zig-test-buffer)))
+
 (use-package! glsl-mode)
 (add-to-list 'auto-mode-alist '("\\.gdshader\\'" . glsl-mode))
 
-(setq ob-mermaid-cli-path "/usr/bin/mmdc")
+(defvar org-babel-default-header-args:mermaid
+  '((:results . "file") (:exports . "results"))
+  "Default arguments for evaluatiing a mermaid source block.")
 
-(setq org-plantuml-jar-path "~/.emacs.d/lib/plantuml.jar")
+(defvar org-babel-default-header-args:plantuml
+  '((:results . "file") (:exports . "results"))
+  "Default arguments for evaluatiing a mermaid source block.")
+
+
+(defcustom ob-mermaid-cli-path "/usr/bin/mmdc"
+  "Path to mermaid.cli executable."
+  :group 'org-babel
+  :type 'string)
+
+(defun org-babel-execute:mermaid (body params)
+  (let* ((out-file (or (cdr (assoc :file params))
+                       (error "mermaid requires a \":file\" header argument")))
+	 (theme (cdr (assoc :theme params)))
+	 (width (cdr (assoc :width params)))
+	 (height (cdr (assoc :height params)))
+	 (background-color (cdr (assoc :background-color params)))
+	 (mermaid-config-file (cdr (assoc :mermaid-config-file params)))
+	 (css-file (cdr (assoc :css-file params)))
+	 (pupeteer-config-file (cdr (assoc :pupeteer-config-file params)))
+         (temp-file (org-babel-temp-file "mermaid-"))
+         (mmdc (or ob-mermaid-cli-path
+                   (executable-find "mmdc")
+                   (error "`ob-mermaid-cli-path' is not set and mmdc is not in `exec-path'")))
+         (cmd (concat (shell-quote-argument (expand-file-name mmdc))
+                      " -i " (org-babel-process-file-name temp-file)
+                      " -o " (org-babel-process-file-name out-file)
+		      (when theme
+			(concat " -t " theme))
+		      (when background-color
+			(concat " -b " background-color))
+		      (when width
+			(concat " -w " width))
+		      (when height
+			(concat " -H " height))
+		      (when mermaid-config-file
+			(concat " -c " (org-babel-process-file-name mermaid-config-file)))
+		      (when css-file
+			(concat " -C " (org-babel-process-file-name css-file)))
+                      (when pupeteer-config-file
+                        (concat " -p " (org-babel-process-file-name pupeteer-config-file))))))
+    (unless (file-executable-p mmdc)
+      ;; cannot happen with `executable-find', so we complain about
+      ;; `ob-mermaid-cli-path'
+      (error "Cannot find or execute %s, please check `ob-mermaid-cli-path'" mmdc))
+    (with-temp-file temp-file (insert body))
+    (message "%s" cmd)
+    (org-babel-eval cmd "")
+    nil))
+
+(setq org-plantuml-jar-path "/usr/bin/plantuml")
 
 (setq lsp-auto-guess-root t)
 (global-ede-mode t)
@@ -166,7 +224,7 @@ but I don't really wanna do this cause this just prove that I can't over write t
 (when (string-equal system-type "darwin")
 (setq gdscript-godot-executable "~/Desktop/Godot.app/Contents/MacOS/Godot"))
 
-(setq gdscript-godot-executable "~/Downloads/Godot_v3.5-stable_x11.64")
+(setq gdscript-godot-executable "~/bin/Godot_v4.0-stable_linux.x86_64")
 
  (defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
@@ -180,9 +238,6 @@ but I don't really wanna do this cause this just prove that I can't over write t
     (apply original-function args)))
 ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
 (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
-
-(add-hook 'typescript-mode-hook 'lsp-deferred)
-(load-file "~/addhook/ob-typescript/ob-typescript.el")
 
 (use-package dap-mode
   :custom
@@ -482,6 +537,10 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
   (let ((select '((me . roam)
                   ;; with my friend
                   (share . loggg)
+                  ;;experiment
+                  (expr . expr)
+                  ;; Obviously, for the homepage.
+                  (elisp . knowledge/elisp)
                   ;; Obviously, for the homepage.
                   (homepage . homepagr/raedme/public/texts))))
 
@@ -533,6 +592,20 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
       elgantt-startup-folded nil
       elgantt-show-header-depth t
       elgantt-draw-overarching-headers t)
+
+(add-load-path! "~/Projects/emacs/origami.el/")
+(require 'origami)
+
+(global-origami-mode 1)
+;; with vim vibe, you can open/close what's with parenthesis or indent
+(map! (:leader
+       (:desc "close all(fold all)" "f K" #'origami-close-all-nodes
+        :desc "open all(toggle all)" "f J" #'origami-open-all-nodes
+        :desc "close(fold) current line"
+        "f k" #'origami-close-node
+        :desc "open(toggle) current line"
+        "f j" #'origami-open-node
+        )))
 
 (defconst ladicle/org-journal-dir "~/roam/journal/")
 (defconst ladicle/org-journal-file-format (concat ladicle/org-journal-dir "%Y%m%d.org"))
@@ -586,19 +659,59 @@ PRIORITY may be one of the characters ?A, ?B, or ?C."
          "%A"
          :immediate-finish t))
 
-(defmacro sub-youtube (id)
-  """get subtitle of youtube video just with url.
-cause the parameter can also be symbol, I waana take
-symbol itself. that's why this is macro """
-  (let* ((url-string (symbol-name id))
-         (id (and (string-match "v=\\(.*\\)$" url-string)
-                  (match-string 1 url-string))))
-   (print
-    (shell-command-to-string
-     (format "python3 ~/Dropbox/POKE/Web/youtube-sub.py %s"
-             id)))
+(defun multiple-choice (alst)
+  (ivy-read "which option"
+            alst
+            :action
+            (lambda (choice) (eval (cdr choice))))
+  )
+
+(defun split-string-no-blank (fs str)
+  (cl-remove-if (lambda (txt) (string= txt ""))
+                (split-string fs str)))
+(defun url-https->ssh (url)
+  (let ((lst (split-string-no-blank url "/" )))
+    (format "git@github.com:%s/%s.git"
+            (cl-third lst)
+            (cl-fourth lst))))
+(print (url-https->ssh "https://github.com/conao3/cort.el/"))
+
+
+(defun cond-url ()
+  """depending on the content of (car kill-ring)
+burf the content I wanna place in journal"""
+  (interactive)
+  (let* ((url-lst
+          (cl-remove-if (lambda (txt) (string= txt ""))
+                        (split-string
+                         (car kill-ring)
+                         "/")
+                        ))
+         ;;LOOKS UGLY
+         (domain (cadr url-lst))
+         (author-repo (cddr url-lst))
+         (author (nth 0 author-repo))
+         (repo (car (last  author-repo)))
+         (lasto (car (last url-lst))))
+    (switch domain
+            ("github.com"
+             (multiple-choice
+              `((clone . (shell-command (format "git clone %s" (url-https->ssh (car kill-ring)))))
+                (package . (insert (format "(package! %s
+  :recipe (:host github :repo \"%s\"))"
+                                           repo (concat author  "/" repo))))
+                )))
+            ("www.youtube.com"
+             (insert
+              (shell-command-to-string
+               (format "python3 ~/Dropbox/POKE/Web/youtube-sub.py %s"
+                       (and (string-match "v=\\(.*\\)$" lasto)
+                            (match-string 1 lasto))))
+              ))
+            )
     )
   )
+
 
 ;;keybinding
 (map! (:leader
@@ -653,6 +766,7 @@ symbol itself. that's why this is macro """
 (add-to-list 'org-structure-template-alist '("ba" . "src bash"))
 (add-to-list 'org-structure-template-alist '("py" . "src python"))
 (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+(add-to-list 'org-structure-template-alist '("ma" . "src mermaid"))
 (add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
 (add-to-list 'org-structure-template-alist '("pl" . "src plantuml"))
 (add-to-list 'org-structure-template-alist '("js" . "src js"))
@@ -961,12 +1075,16 @@ symbol itself. that's why this is macro """
                      (extract-link-name (thing-at-point 'line t))))
       rect-bracketed)))
 
+(setq org-roam-dailies-capture-templates
+      '(("d" "default" entry "* %?" :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>
+ * visited"))))
+
 (defun linkp (name)
   (if (member name (get-exsting-link-name))
       t
     nil))
 
-;I couldn't find the prepared thing for the org-dailies
+                                        ;I couldn't find the prepared thing for the org-dailies
 (defun get-today-file ()
   ;;get the file name of current date
   (let ((file-name (org-journal--get-entry-path))
@@ -976,7 +1094,7 @@ symbol itself. that's why this is macro """
     (cl-destructuring-bind (year month date)
         (mapcar #'(lambda (pos) (substring file-name (cl-first pos) (car (last pos))))
                 (list '(0 4) '(4 6) '(6 8)))
-    (format "%s-%s-%s.org" year month date))))
+      (format "%s-%s-%s.org" year month date))))
 
 (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
   (org-roam-dailies-capture-today :KEYS "d") (save-buffer))
@@ -985,8 +1103,8 @@ symbol itself. that's why this is macro """
   (string-match "-.*" str)
   (print (substring (match-string 0 str) 1 (length (match-string 0 str)))))
 
-;this name should be on create journal
-;most fishy place
+                                        ;this name should be on create journal
+                                        ;most fishy place
 (defun write-to (buffer)
   (with-current-buffer
       (let ((new-node (buffer-name)))
@@ -995,13 +1113,16 @@ symbol itself. that's why this is macro """
 
         (unless (file-exists-p (format "%s/%s" org-roam-dailies-directory (get-today-file)))
           (print "no-today file"))
-        ; if the link exist, skip, if no, create the link to it.
+                                        ; if the link exist, skip, if no, create the link to it.
         (unless (linkp (get-node-name new-node))
           (save-excursion
             (look-for-header-insert
-             (format "[[%s][%s]]\n" (concat org-roam-directory "/" new-node) (get-node-name new-node)) "visited")
+             (format "[[%s][%s]]\n" (string-replace
+                                     "\n" ""
+                                     (shell-command-to-string
+                                     (format "cat %s | grep :ID: | sed 's/:ID:       /id:/'"
+                                             (concat org-roam-directory "/" new-node)))) (get-node-name new-node)) "visited")
             ))
-        (insert-header-unless-exist "visited")
         (print (current-buffer)))))
 
 (defun add-url-to-journal ()
@@ -1022,7 +1143,7 @@ symbol itself. that's why this is macro """
 
 (setq +org-capture-journal-file (concat "~/Dropbox/roam/journal/" (today-buffer)))
 
-;TODO really don't wanna make it today-buffer specific.
+                                        ;TODO really don't wanna make it today-buffer specific.
 (defun look-for-header-insert (content header)
   (set-buffer (today-buffer))
   (save-excursion
@@ -1034,6 +1155,8 @@ symbol itself. that's why this is macro """
   (let ((headline (concat "* " head)))
     (unless (headerp (today-buffer) headline)
       (goto-char (point-max)) (insert headline))))
+
+
 
 (defun headerp (buffer heading)
   (set-buffer buffer)
@@ -1050,27 +1173,57 @@ symbol itself. that's why this is macro """
 ;;setup the key-binds
 (map! (:leader
        (:desc "dict-lookup-with-journal"
-        "s t" (lambda ()
-                (interactive)
+              "s t" (lambda ()
+                      (interactive)
 
-                (let ((thing (doom-thing-at-point-or-region 'word)))
-                  (insert-header-unless-exist "vocab")
-                  (+lookup/dictionary-definition thing)
-                  (look-for-header-insert thing "vocab")))
-        )
+                      (let ((thing (doom-thing-at-point-or-region 'word)))
+                        (insert-header-unless-exist "vocab")
+                        (+lookup/dictionary-definition thing)
+                        (look-for-header-insert thing "vocab")))
+              )
        (:desc "leave history with the w3m"
-        "c u r i" #'add-url-to-journal)))
+              "c u r i" #'add-url-to-journal)))
 
 (add-to-list 'org-capture-templates
              '("j" "Journal" entry
                (file +org-capture-journal-file)
                "* %?\n" :prepend t))
 
+;;template
+(auto-insert-mode 1)
+(defun my-template ()
+  (time-stamp)
+  (mapc #'(lambda(c)
+            (progn
+              (goto-char (point-min))
+              (replace-string (car c) (funcall (cdr c)) nil)))
+        template-replacements-alists)
+  (goto-char (point-max))
+  (message "done."))
+
+(add-to-list 'auto-insert-alist
+             '("\\.cgi\\'" .
+               ["~/.emacs.d/templates/unicage.cgi" my-template])
+             )
+
+(add-to-list 'auto-insert-alist
+             '("\\.HTML\\'" .
+               ["~/.emacs.d/templates/unicage.html"])
+             )
+
+(defvar template-replacements-alists
+  '(("%file%"             . (lambda () (file-name-nondirectory (buffer-file-name))))
+    ("%file-without-ext%" . (lambda () (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
+    ("%date%" . (lambda() (shell-command-to-string "date --rfc-3339=date | sed   's/-/\\//g'")))
+    ("%email%" . (lambda () "the.brainga@gmail.com"))
+    ("%name%" . (lambda () (identity user-full-name)))
+    ))
+
 (defun create-unicage-dir ()
   (interactive)
   (let ((unicage-dir (list "LOG"
                            '(NENDAI "CGI" "HTML"
-                                    "INPUT" (TUIDE "UNKO"))))
+                             "INPUT" (TUIDE "UNKO"))))
         (app-name (read-string "APP NAME> ")))
     (f-mkdir app-name)
     (cl-labels ((rec (dir cur)
@@ -1245,7 +1398,7 @@ symbol itself. that's why this is macro """
       :desc "using chrome, reading things, If the nyxt gets better I would use that."
       "b o" #'read-book-with-chrome)
 
-;(use-package nyan-mode)
+(use-package nyan-mode)
 ;(setq nyan-mode t)
 ;;(setq doom-modeline-mode 'nil)
 (load-file "~/Dropbox/POKE/Elisp/pokel.el")
@@ -1274,7 +1427,8 @@ symbol itself. that's why this is macro """
 (map! (:leader
        :desc "just jumping to the message buffer" "l o g" #'message-buffer-in-other-window))
 
-(modus-themes-load-vivendi)
+(load-theme 'modus-vivendi)
+
 (defun get-max-linum (&optional file-or-buffer)
   (interactive)
   (cl-flet ((go-and-get-max-line ()(save-excursion
@@ -1307,7 +1461,8 @@ symbol itself. that's why this is macro """
     (insert (shell-command-to-string (concat "python ~/tools/hiragana_katakana.py " region)))))
 
 (setq auto-mode-alist
-      (append '(("\\.cgi$" . shell-script-mode))
+      (append '(("\\.cgi$" . shell-script-mode)
+                ("\\.ino$" . c-mode))
               auto-mode-alist)
       )
 
@@ -1344,12 +1499,4 @@ symbol itself. that's why this is macro """
 
 ;;helper functions used by =emacsclient=.
 
-
-;;;### (autoloads nil "tscn" "tscn.el" (25422 56915 349704 301000))
-;;; Generated autoloads from tscn.el
 
-(register-definition-prefixes "gdutil" '("format-prop" "group-by-prop" "prop-p" "tscn-lst"))
-
-;kszxcvkj;;***
-
-(register-definition-prefixes "test" '("testfile"))

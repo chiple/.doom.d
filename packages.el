@@ -14,15 +14,28 @@
 ;(package! another-package
 ;  :recipe (:host github :repo "username/repo"))
 
+(package! origami.el
+  :recipe (:host github :repo "gregsexton/origami.el"))
+
+(package! zig-mode
+  :recipe (:host github :repo "ziglang/zig-mode"))
+
+(package! emacs-reformatter
+  :recipe (:host github :repo "purcell/emacs-reformatter"))
+
 (package! org-roam-ui)
 (package! org-roam-bibtex
   :recipe (:host github :repo "org-roam/org-roam-bibtex" :branch "orb-v0.5"))
 
+(package! skewer-mode
+  :recipe (:host github :repo "skeeto/skewer-mode"))
+
 (package! biblio.el
   :recipe (:host github :repo "cpitclaudel/biblio.el"))
-
+(package! ob-mermaid)
 (package! coconut-mode
   :recipe (:host github :repo "NickSeagull/coconut-mode"))
+
 (package! ob-fish
   :recipe (:host github :repo "takeokunn/ob-fish"))
 
@@ -122,6 +135,9 @@
 
 (package! nyan-mode
   :recipe (:host github :repo "TeMPOral/nyan-mode"))
+
+(package! ansi.el
+  :recipe (:host github :repo "rejeep/ansi.el"))
 
 (package! cort.el
   :recipe (:host github :repo "conao3/cort.el"))

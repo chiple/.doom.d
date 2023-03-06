@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: username-date
+# uuid:
+# key: username-date
+# condition: t
+# --
+# written by ${1: `(user-full-name)`}  ${2:`(format-time-string "%Y-%m-%d %H:%M:%S")`}

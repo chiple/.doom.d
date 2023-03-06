@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: comment
+# uuid:
+# key: com
+# condition: t
+# --
+
+##################################################
+# ${}

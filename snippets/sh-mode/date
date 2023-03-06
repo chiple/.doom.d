@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: date
+# uuid:
+# key: d
+# condition: t
+# --
+${date}
